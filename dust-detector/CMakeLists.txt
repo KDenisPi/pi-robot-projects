@@ -9,7 +9,7 @@ set(VER_MJR 1)
 set(VER_MIN 0)
 
 #Pi-Robot folder
-set(PI_ROBOT_HOME ${PROJECT_SOURCE_DIR}/../../pi-robot-no-wiringpi)
+set(PI_ROBOT_HOME ${PROJECT_SOURCE_DIR}/../../pi-robot-dll)
 message(STATUS "PI_ROBOT_HOME:  ${PI_ROBOT_HOME}")
 
 #set(EXTRA_LIBS ${EXTRA_LIBS} pi-utils pi-library pi-smachine pthread dl curl crypt)
