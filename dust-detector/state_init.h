@@ -15,7 +15,7 @@ namespace dust {
 
 class StInitialization : public smachine::state::State {
 public:
-    StInitialization(smachine::StateMachineItf* itf) : smachine::state::State(itf, "StInitialization") {
+    StInitialization(smachine::StateMachineItf* itf) : smachine::state::State(itf, "StInitialization"){
     }
 
     virtual ~StInitialization(){}
@@ -24,7 +24,12 @@ public:
     *
     */
     virtual void OnEntry() override {
+        logger::log(logger::LLOG::DEBUG, "DustInit", std::string(__func__) + " Started");
+        auto ctxt = get_env<dust::Context>();
 
+        ctxt->_dust_value = 0;
+
+        CHANGE_STATE("StMeasurement");
     }
 };
 

@@ -25,6 +25,7 @@ public:
 
 	virtual const std::shared_ptr<smachine::state::State> get_state(const std::string state_name, smachine::StateMachineItf* itf) override{
 	    logger::log(logger::LLOG::DEBUG, "StFact", std::string(__func__) + " State:" + state_name);
+
 	    if(state_name.compare("StInitialization") == 0){
 		return std::shared_ptr<smachine::state::State>(new dust::StInitialization(itf));
 	    }
@@ -40,7 +41,7 @@ public:
 	 * Create Environment object
 	 */
 	virtual std::shared_ptr<smachine::Environment> get_environment() override {
-	    return std::make_shared<Context>();
+	    return std::make_shared<dust::Context>();
 	}
 };
 
