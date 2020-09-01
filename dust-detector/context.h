@@ -28,7 +28,7 @@ public:
     std::string _ip4_address;
     std::string _ip6_address;
 
-   uint16_i  _dust_value;
+   uint16_t  _dust_value;
 };
 
 }//namespace dust

@@ -15,6 +15,7 @@ message(STATUS "PI_ROBOT_HOME:  ${PI_ROBOT_HOME}")
 find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME}/bin)
 find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
 find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
+find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
 
 IF($ENV{USER} STREQUAL "pi")
     set(REAL_HARDWARE 1)
@@ -24,6 +25,7 @@ ELSE($ENV{USER} STREQUAL "pi")
     set(THIRD_PARTY_HOME "$ENV{HOME}/third-party")
 ENDIF($ENV{USER} STREQUAL "pi")
 
+message( STATUS "REAL_HARDWARE: ${REAL_HARDWARE}")
 message( STATUS "THIRD_PARTY_HOME: ${THIRD_PARTY_HOME}")
 
 set(MONGOOSE_HOME "${THIRD_PARTY_HOME}/mongoose-5.1")
@@ -34,7 +36,7 @@ set(MOSQUITTO_HOME "${THIRD_PARTY_HOME}/mosquitto")
 
 
 #set(EXTRA_LIBS ${EXTRA_LIBS} pi-utils pi-library pi-smachine pthread dl curl crypt)
-set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} pthread dl curl crypt)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt)
 message(STATUS "EXTRA_LIBS (proj):  ${EXTRA_LIBS}")
 
 include_directories(BEFORE

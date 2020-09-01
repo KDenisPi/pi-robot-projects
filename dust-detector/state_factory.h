@@ -24,7 +24,7 @@ public:
 	virtual ~StFactory() {}
 
 	virtual const std::shared_ptr<smachine::state::State> get_state(const std::string state_name, smachine::StateMachineItf* itf) override{
-	    logger::log(logger::LLOG::DEBUG, TAG, std::string(__func__) + " State:" + state_name);
+	    logger::log(logger::LLOG::DEBUG, "StFact", std::string(__func__) + " State:" + state_name);
 	    if(state_name.compare("StInitialization") == 0){
 		return std::shared_ptr<smachine::state::State>(new dust::StInitialization(itf));
 	    }

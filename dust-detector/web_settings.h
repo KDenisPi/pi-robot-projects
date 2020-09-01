@@ -34,7 +34,7 @@ public:
     virtual const std::pair<std::string, std::string> get_page(const struct mg_connection *conn) override {
         logger::log(logger::LLOG::DEBUG, "Web", std::string(__func__) + " URI:" + (conn->uri != nullptr ? conn->uri : "Not defined"));
 
-        if(std::strcmp(conn->uri, "/") == 0 || strcmp(uri, "/status.html") == 0 || strcmp(uri, "/default.html") == 0){
+        if(std::strcmp(conn->uri, "/") == 0 || strcmp(conn->uri, "/status.html") == 0 || strcmp(conn->uri, "/default.html") == 0){
            std::string result;
            return std::make_pair(http::web::mime_json, result);
         }

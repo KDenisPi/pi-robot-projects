@@ -12,16 +12,16 @@
 
 #include "StateMachine.h"
 #include "logger.h"
+#include "pi-main/pi-main.h"
 
 #include "state_factory.h"
 #include "web_settings.h"
 
 namespace dust {
 
-class DustControl :: public pimain::PiMain {
+class DustControl : public pimain::PiMain {
 public:
-
-    DustControl() : PiMain("dust"){
+    DustControl() : pimain::PiMain(std::string("dust")){
 
     }
 
@@ -30,17 +30,15 @@ public:
             return _factory;
         }
 
-        return std::make_shared<dust::StateFactory>();
+        return std::make_shared<dust::StFactory>();
     }
 
     /*
     *
     */
    virtual std::shared_ptr<http::web::WebSettings> web(const uint16_t port, std::shared_ptr<smachine::StateMachineItf> itf) override{
-       return std::shared_ptr<dust::web::WebSettings>();
+       return std::shared_ptr<dust::web::WebDust>();
    }
-
-
 };
 
 }//namespace dust

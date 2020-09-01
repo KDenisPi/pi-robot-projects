@@ -1,0 +1,10 @@
+{
+    "version" : "1.0",
+    "real_world" : true,
+
+    "context": {
+        "log_path": "/var/log/pi-robot",
+        "log_name": "dust_file_logger",
+        "log_file": "async_log"
+    }
+}
