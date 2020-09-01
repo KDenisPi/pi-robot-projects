@@ -10,12 +10,8 @@ set(VER_MIN 0)
 
 #Pi-Robot folder
 set(PI_ROBOT_HOME ${PROJECT_SOURCE_DIR}/../../pi-robot-dll)
+set(PI_ROBOT_HOME_BUILD ${PI_ROBOT_HOME}/build)
 message(STATUS "PI_ROBOT_HOME:  ${PI_ROBOT_HOME}")
-
-find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME}/bin)
-find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
-find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
-find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
 
 IF($ENV{USER} STREQUAL "pi")
     set(REAL_HARDWARE 1)
@@ -35,8 +31,41 @@ set(MOSQUITTO_HOME "${THIRD_PARTY_HOME}/mosquitto")
 #set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 
 
-#set(EXTRA_LIBS ${EXTRA_LIBS} pi-utils pi-library pi-smachine pthread dl curl crypt)
-set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt)
+IF(${REAL_HARDWARE})
+    message( STATUS "Process REAL HARDWARE")
+
+    find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME}/bin)
+    find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
+    find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
+    find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
+    set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt)
+
+ELSE(${REAL_HARDWARE})
+    message( STATUS "Process NO REAL HARDWARE")
+
+    #pi-utils
+    add_library(pi-utils STATIC IMPORTED)
+    set_property(TARGET pi-utils PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-utils/libpi-utils.a)
+
+    #pi-library
+    add_library(pi-library STATIC IMPORTED)
+    set_property(TARGET pi-library PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-library/libpi-library.a)
+
+    #pi-smachine
+    add_library(pi-smachine STATIC IMPORTED)
+    set_property(TARGET pi-smachine PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-smachine/libpi-smachine.a)
+
+    #pi-http
+    add_library(pi-http STATIC IMPORTED)
+    set_property(TARGET pi-http PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-http/libpi-http.a)
+
+    #pi-core
+    add_library(pi-core STATIC IMPORTED)
+    set_property(TARGET pi-core PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-core/libpi-core.a)
+
+    set(EXTRA_LIBS pi-utils pi-library pi-smachine pi-http pi-core pthread dl curl crypt)
+ENDIF(${REAL_HARDWARE})
+
 message(STATUS "EXTRA_LIBS (proj):  ${EXTRA_LIBS}")
 
 include_directories(BEFORE
