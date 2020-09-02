@@ -22,26 +22,26 @@ namespace dust {
 class DustControl : public pimain::PiMain {
 public:
     DustControl() : pimain::PiMain(std::string("dust")){
-        std::cout <<  "----------- Created ----" << std::endl;
+        logger::log(logger::LLOG::DEBUG, "DCtrl", std::string(__func__) + " Started");
     }
 
     virtual std::shared_ptr<smachine::StateFactory> factory(const std::string& firstState) override {
-        std::cout <<  "----------- My factory ----" << std::endl;
+        logger::log(logger::LLOG::DEBUG, "DCtrl", std::string(__func__) + " Started State: " + firstState);
 
         if(_factory){
             return _factory;
         }
 
-        std::cout <<  "----------- My factory 2 ----" << std::endl;
-        return std::make_shared<dust::StFactory>();
+        logger::log(logger::LLOG::DEBUG, "DCtrl", std::string(__func__) + " Created");
+        return std::make_shared<dust::StFactory>(firstState);
     }
 
     /*
     *
     */
    virtual std::shared_ptr<http::web::WebSettings> web(const uint16_t port, std::shared_ptr<smachine::StateMachineItf> itf) override{
-        std::cout <<  "----------- My factory 3 ----" << std::endl;
-       return std::shared_ptr<dust::web::WebDust>();
+       logger::log(logger::LLOG::DEBUG, "DCtrl", std::string(__func__));
+       return std::make_shared<dust::web::WebDust>(port, itf);
    }
 };
 

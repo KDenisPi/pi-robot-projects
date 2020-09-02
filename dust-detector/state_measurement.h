@@ -17,7 +17,7 @@ enum TIMER_ID : uint16_t {
     TIMER_MEASUREMENT      = 1000,
 };
 
-#define MEASURE_INTERVAL   3 //60 //sec
+#define MEASURE_INTERVAL   60 //sec
 
 
 class StMeasurement : public smachine::state::State {
@@ -39,7 +39,7 @@ public:
 
         ctxt->_dust_value++;
 
-        get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, 5);
+        get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
     }
 
     /**
@@ -55,14 +55,7 @@ public:
             ctxt->_dust_value++;
             logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_dust_value));
 
-            if(ctxt->_dust_value < 5){
-                TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
-            }
-            else{
-               logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Finish. Counter: " + std::to_string(ctxt->_dust_value));
-               get_itf()->finish();
-            }
-
+            TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
             return true;
           }
           break;
