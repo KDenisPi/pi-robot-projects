@@ -15,10 +15,13 @@ namespace dust {
 
 class StInitialization : public smachine::state::State {
 public:
-    StInitialization(smachine::StateMachineItf* itf) : smachine::state::State(itf, "StInitialization"){
+    StInitialization(const std::shared_ptr<smachine::StateMachineItf> itf) : smachine::state::State(itf, "StInitialization"){
+        logger::log(logger::LLOG::DEBUG, "DustInit", std::string(__func__) + " Started");
     }
 
-    virtual ~StInitialization(){}
+    virtual ~StInitialization(){
+        logger::log(logger::LLOG::DEBUG, "DustInit", std::string(__func__) + " Started");
+    }
 
     /**
     *

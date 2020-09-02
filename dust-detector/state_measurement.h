@@ -25,7 +25,7 @@ public:
     /**
     *
     */
-    StMeasurement(smachine::StateMachineItf* itf) : smachine::state::State(itf, "StMeasurement") {
+    StMeasurement(const std::shared_ptr<smachine::StateMachineItf> itf) : smachine::state::State(itf, "StMeasurement") {
     }
 
     virtual ~StMeasurement(){}
@@ -38,7 +38,8 @@ public:
         auto ctxt = get_env<dust::Context>();
 
         ctxt->_dust_value++;
-        TIMER_CREATE(TIMER_MEASUREMENT, MEASURE_INTERVAL);
+
+        get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, 5);
     }
 
     /**
@@ -49,15 +50,18 @@ public:
         auto ctxt = get_env<dust::Context>();
 
         switch(id){
-          case TIMER_MEASUREMENT:
+          case TIMER_ID::TIMER_MEASUREMENT:
           {
             ctxt->_dust_value++;
+            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_dust_value));
 
             if(ctxt->_dust_value < 5){
-                TIMER_CREATE(TIMER_MEASUREMENT, MEASURE_INTERVAL);
+                TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
             }
-            else
+            else{
+               logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Finish. Counter: " + std::to_string(ctxt->_dust_value));
                get_itf()->finish();
+            }
 
             return true;
           }

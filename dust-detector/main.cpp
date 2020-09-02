@@ -10,19 +10,19 @@ using namespace std;
 int main (int argc, char* argv[])
 {
     bool success = true;
-    logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " Dust. Starting");
 
     dust::DustControl* dctrl = new dust::DustControl();
     dctrl->set_conf_main("/home/pi/pi-robot-projects/dust-detector/dust-detector.json");
-    dctrl->set_debug_mode(true);
+    dctrl->set_debug_mode(false);
+    dctrl->set_daemon_mode(true);
+
+    std::cout << "Starting " << success << std::endl;
     dctrl->run();
 
-    std::cout << "Started " << success << std::endl;
-    sleep(4);
+    std::cout << "Waiting " << success << std::endl;
+    sleep(1);
 
     delete dctrl;
-
-    logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " Dust. Start procedure finished");
     std::cout << "Finished " << success << std::endl;
 
     exit( (success ? EXIT_SUCCESS : EXIT_FAILURE));
