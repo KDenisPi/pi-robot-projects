@@ -35,12 +35,16 @@ public:
         logger::log(logger::LLOG::DEBUG, "Web", std::string(__func__) + " URI:" + (conn->uri != nullptr ? conn->uri : "Not defined"));
 
         if(std::strcmp(conn->uri, "/") == 0 || strcmp(conn->uri, "/status.html") == 0 || strcmp(conn->uri, "/default.html") == 0){
-           std::string result;
-           return std::make_pair(http::web::mime_json, result);
+           auto ctxt = get_context<dust::Context>();
+           std::sprintf(_buff, "{level:%d}", ctxt->_dust_value);
+
+           return std::make_pair(http::web::mime_json, std::string(_buff));
         }
 
        return std::make_pair("", "");
     }
+
+   char _buff[128];
 
 };
 
