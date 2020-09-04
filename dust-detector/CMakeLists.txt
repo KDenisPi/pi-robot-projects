@@ -37,7 +37,7 @@ find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
 find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
 find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
 
-set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt ${BCM_HOST_LIB})
+set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt)
 
 IF($ENV{USER} STREQUAL "pi")
     find_library(BCM_HOST_LIB bcm_host PATH "/opt/vc/lib")
