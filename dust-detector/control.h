@@ -22,7 +22,6 @@ namespace dust {
 class DustControl : public pimain::PiMain {
 public:
     DustControl() : pimain::PiMain(std::string("dust")){
-        logger::log(logger::LLOG::DEBUG, "DCtrl", std::string(__func__) + " Started");
     }
 
     virtual std::shared_ptr<smachine::StateFactory> factory(const std::string& firstState) override {
