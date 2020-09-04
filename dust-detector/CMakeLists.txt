@@ -30,43 +30,19 @@ set(MOSQUITTO_HOME "${THIRD_PARTY_HOME}/mosquitto")
 
 #set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 
+message( STATUS "Process REAL HARDWARE")
 
-    message( STATUS "Process REAL HARDWARE")
+find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME}/bin)
+find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
+find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
+find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
 
-    find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME}/bin)
-    find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME}/bin)
-    find_library(PISMACHINE_LIB pi-smachine PATH ${PI_ROBOT_HOME}/bin)
-    find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt ${BCM_HOST_LIB})
 
-    #pi-utils
-    #add_library(pi-utils STATIC IMPORTED GLOBAL)
-    #set_target_properties(pi-utils PROPERTIES IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-utils/libpi-utils.a)
-    #set_property(TARGET pi-utils PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-utils/)
-
-    #pi-library
-    #add_library(pi-library STATIC IMPORTED GLOBAL)
-    #set_property(TARGET pi-library PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-library/libpi-library.a)
-
-    #pi-smachine
-    #add_library(pi-smachine STATIC IMPORTED GLOBAL)
-    #set_property(TARGET pi-smachine PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-smachine/libpi-smachine.a)
-
-    #pi-core
-    #add_library(pi-core STATIC IMPORTED GLOBAL)
-    #set_target_properties(pi-core PROPERTIES IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-core/libpi-core.a)
-    #set_property(TARGET pi-core PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-core/libpi-core.a)
-
-    #pi-http
-    #add_library(pi-http STATIC IMPORTED GLOBAL)
-    #set_property(TARGET pi-http PROPERTY IMPORTED_LOCATION ${PI_ROBOT_HOME_BUILD}/pi-http/libpi-http.a)
-    #find_library(PIHTTP_LIB pi-http PATH ${PI_ROBOT_HOME}/bin)
-
+IF($ENV{USER} STREQUAL "pi")
     find_library(BCM_HOST_LIB bcm_host PATH "/opt/vc/lib")
-
-    #set(EXTRA_LIBS ${EXTRA_LIBS} ${PI_ROBOT_HOME_BUILD}/pi-utils/libpi-utils.a ${PI_ROBOT_HOME_BUILD}/pi-core/libpi-core.a  ${PI_ROBOT_HOME_BUILD}/pi-library/libpi-library.a pi-smachine pi-http pthread ${BCM_HOST_LIB} rt dl curl crypt)
-    #set(EXTRA_LIBS ${EXTRA_LIBS} pi-utils pi-library pi-smachine pi-core pi-http pthread ${BCM_HOST_LIB} rt dl curl crypt)
-
-    set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} ${PISMACHINE_LIB} ${PIHTTP_LIB} pthread dl curl crypt ${BCM_HOST_LIB})
+    set(EXTRA_LIBS ${EXTRA_LIBS} ${BCM_HOST_LIB})
+ENDIF($ENV{USER} STREQUAL "pi")
 
 message(STATUS "EXTRA_LIBS (proj):  ${EXTRA_LIBS}")
 
