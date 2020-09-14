@@ -2,9 +2,36 @@
     "version" : "1.0",
     "real_world" : true,
 
-    "context": {
-        "log_path": "/var/log/pi-robot",
-        "log_name": "dust_file_logger",
-        "log_file": "async_log"
-    }
+    "providers": [
+        {"type": "SPI", "channels": 1, "speed_1": 9600, "mode_1": 0}
+    ],
+
+    "gpios": [
+        {"name": "mcp320x", "provider": "SIMPLE", "pin": 2, "mode": "OUT"},
+        {"name": "dustsensor", "provider": "SIMPLE", "pin": 11, "mode": "OUT"}
+    ],
+
+    "items":[
+        {
+            "type": "AnlgDgtConvertor",
+            "name":"MCP3xxx",
+            "comment":"",
+            "gpio":{"provider": "SIMPLE", "pin": 2},
+            "analog_inputs":8,
+            "spi_channel":0,
+            "dtype":"MCP3008",
+            "delay": 5000
+        },
+        {
+            "type": "AnalogMeterSimple",
+            "name": "DustMeter",
+            "ad_convertor": "MCP3xxx",
+            "pins": [
+                {
+                    "pin" : 0, "type" : "dustsensor", "gpio": {"provider": "SIMPLE", "pin": 11}
+                }
+             ]
+
+        }
+    ]
 }
