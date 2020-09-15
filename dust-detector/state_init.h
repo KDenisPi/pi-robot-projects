@@ -30,7 +30,7 @@ public:
         logger::log(logger::LLOG::DEBUG, "DustInit", std::string(__func__) + " Started");
         auto ctxt = get_env<dust::Context>();
 
-        ctxt->_dust_value = 0;
+        ctxt->_density = 0;
 
         CHANGE_STATE("StMeasurement");
     }

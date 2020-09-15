@@ -9,6 +9,9 @@
 #define DUST_STMEASUREMENT_H_
 
 #include "StateMachine.h"
+#include "State.h"
+#include "dustSensor.h"
+
 #include "context.h"
 
 namespace dust {
@@ -16,9 +19,6 @@ namespace dust {
 enum TIMER_ID : uint16_t {
     TIMER_MEASUREMENT      = 1000,
 };
-
-#define MEASURE_INTERVAL   60 //sec
-
 
 class StMeasurement : public smachine::state::State {
 public:
@@ -37,9 +37,12 @@ public:
         logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Started");
         auto ctxt = get_env<dust::Context>();
 
-        ctxt->_dust_value++;
+        auto dust_sensor = get_item<pirobot::item::dustsensor::DustSensor>("DustMeter");
+        ctxt->_density = dust_sensor-> get_data();
 
-        get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
+        logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Density : " + std::to_string(ctxt->_density));
+
+        get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, measure_interval);
     }
 
     /**
@@ -52,10 +55,12 @@ public:
         switch(id){
           case TIMER_ID::TIMER_MEASUREMENT:
           {
-            ctxt->_dust_value++;
-            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_dust_value));
+            auto dust_sensor = get_item<pirobot::item::dustsensor::DustSensor>("DustMeter");
+            ctxt->_density = dust_sensor-> get_data();
 
-            TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, MEASURE_INTERVAL);
+            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_density));
+            TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, measure_interval);
+
             return true;
           }
           break;
@@ -63,6 +68,8 @@ public:
 
         return false;
     }
+
+  const int measure_interval = 10;
 
 };
 
