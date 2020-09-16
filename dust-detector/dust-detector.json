@@ -7,11 +7,11 @@
     ],
 
     "gpios": [
-        {"name": "mcp320x", "provider": "SIMPLE", "pin": 2, "mode": "OUT"},
-        {"name": "dustsensor", "provider": "SIMPLE", "pin": 11, "mode": "OUT"}
+        {"provider": "SIMPLE", "pin": 11, "mode": "OUT"},
+        {"provider": "SIMPLE", "pin": 2, "mode": "OUT"}
     ],
 
-    "items":[
+    "items": [
         {
             "type": "AnlgDgtConvertor",
             "name":"MCP3xxx",
@@ -24,14 +24,13 @@
         },
         {
             "type": "AnalogMeterSimple",
-            "name": "DustMeter",
+            "name": "AnalogMeter",
             "ad_convertor": "MCP3xxx",
             "pins": [
                 {
-                    "pin" : 0, "type" : "dustsensor", "gpio": {"provider": "SIMPLE", "pin": 11}
+                    "pin": 0, "type": "dustsensor", "gpio": {"provider": "SIMPLE", "pin": 11}
                 }
              ]
-
         }
     ]
 }

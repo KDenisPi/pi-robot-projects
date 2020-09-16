@@ -10,6 +10,7 @@
 
 #include "StateMachine.h"
 #include "State.h"
+#include "AnalogMeterSimple.h"
 #include "dustSensor.h"
 
 #include "context.h"
@@ -37,8 +38,11 @@ public:
         logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Started");
         auto ctxt = get_env<dust::Context>();
 
-        auto dust_sensor = get_item<pirobot::item::dustsensor::DustSensor>("DustMeter");
-        ctxt->_density = dust_sensor-> get_data();
+        auto analog_meter = get_item<pirobot::analogmeter::AnalogMeterSimple>("AnalogMeter");
+        if(analog_meter){
+            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " AnalogMeter Detected");
+            ctxt->_density = analog_meter->get_data(0);
+        }
 
         logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Density : " + std::to_string(ctxt->_density));
 
@@ -55,8 +59,8 @@ public:
         switch(id){
           case TIMER_ID::TIMER_MEASUREMENT:
           {
-            auto dust_sensor = get_item<pirobot::item::dustsensor::DustSensor>("DustMeter");
-            ctxt->_density = dust_sensor-> get_data();
+            auto analog_meter = get_item<pirobot::analogmeter::AnalogMeterSimple>("AnalogMeter");
+            ctxt->_density = analog_meter->get_data(0);
 
             logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_density));
             TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, measure_interval);
