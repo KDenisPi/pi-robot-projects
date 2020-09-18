@@ -73,7 +73,7 @@ public:
         return false;
     }
 
-  const int measure_interval = 10;
+  const int measure_interval = 60;
 
 };
 
