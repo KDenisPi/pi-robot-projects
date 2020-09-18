@@ -36,7 +36,7 @@ public:
 
         if(std::strcmp(conn->uri, "/") == 0 || strcmp(conn->uri, "/status.html") == 0 || strcmp(conn->uri, "/default.html") == 0){
            auto ctxt = get_context<dust::Context>();
-           std::sprintf(_buff, "{level:%d}", ctxt->_density);
+           std::sprintf(_buff, "{density:%d}", ctxt->_density);
 
            return std::make_pair(http::web::mime_json, std::string(_buff));
         }
