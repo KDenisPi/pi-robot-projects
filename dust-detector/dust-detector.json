@@ -3,7 +3,7 @@
     "real_world" : true,
 
     "providers": [
-        {"type": "SPI", "channels": 1, "speed_1": 9600, "mode_1": 0}
+        {"type": "SPI", "channels": 1, "speed_1": 1000000, "mode_1": 0}
     ],
 
     "gpios": [
