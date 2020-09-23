@@ -31,6 +31,7 @@ public:
         auto ctxt = get_env<dust::Context>();
 
         ctxt->_density = 0;
+        ctxt->_temp = 0.0;
 
         CHANGE_STATE("StMeasurement");
     }

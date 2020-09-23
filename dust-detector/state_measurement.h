@@ -12,6 +12,7 @@
 #include "State.h"
 #include "AnalogMeterSimple.h"
 #include "dustSensor.h"
+#include "tmp36Sensor.h"
 
 #include "context.h"
 
@@ -42,9 +43,10 @@ public:
         if(analog_meter){
             logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " AnalogMeter Detected");
             ctxt->_density = analog_meter->get_data(0);
+            ctxt->_temp = analog_meter->get_value(1);
         }
 
-        logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Density : " + std::to_string(ctxt->_density));
+        logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Density : " + std::to_string(ctxt->_density) + " Temp(c):  " + std::to_string(ctxt->_temp));
 
         get_itf()->timer_start(TIMER_ID::TIMER_MEASUREMENT, measure_interval);
     }
@@ -61,8 +63,9 @@ public:
           {
             auto analog_meter = get_item<pirobot::analogmeter::AnalogMeterSimple>("AnalogMeter");
             ctxt->_density = analog_meter->get_data(0);
+            ctxt->_temp = analog_meter->get_value(1);
 
-            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Counter: " + std::to_string(ctxt->_density));
+            logger::log(logger::LLOG::DEBUG, "DustMg", std::string(__func__) + " Density : " + std::to_string(ctxt->_density) + " Temp(c):  " + std::to_string(ctxt->_temp));
             TIMER_CREATE(TIMER_ID::TIMER_MEASUREMENT, measure_interval);
 
             return true;

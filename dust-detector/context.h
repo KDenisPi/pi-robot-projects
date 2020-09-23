@@ -17,7 +17,7 @@ public:
     /**
     *
     */
-    Context(const std::string& ver = "1.0") : _version(ver), _ip4_address(""), _ip6_address(""), _density(0) {
+    Context(const std::string& ver = "1.0") : _version(ver), _ip4_address(""), _ip6_address(""), _density(0), _temp(0.0) {
 
     }
 
@@ -29,6 +29,7 @@ public:
     std::string _ip6_address;
 
    uint16_t  _density;
+   float     _temp;
 };
 
 }//namespace dust
