@@ -14,10 +14,6 @@ int main (int argc, char* argv[])
     dust::DustControl* dctrl = new dust::DustControl();
 
     dctrl->load_configuration(argc, argv);
-    dctrl->set_conf_main("/home/deniskudia/sources/pi-robot-projects/dust-detector/dust-detector.json");
-    dctrl->set_debug_mode(false);
-    dctrl->set_use_http(false);
-    dctrl->set_daemon_mode(true);
 
     std::cout << "Starting " << success << std::endl;
     dctrl->run();
