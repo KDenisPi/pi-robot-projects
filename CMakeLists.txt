@@ -25,4 +25,5 @@ message( STATUS "CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
 message( STATUS "GCC is ${CMAKE_CXX_COMPILER_VERSION}")
 message( STATUS "CMAKE_CXX_FLAGS:  ${CMAKE_CXX_FLAGS}" )
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/dust-detector)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/dust-detector)
+add_subdirectory(${PROJECT_SOURCE_DIR}/dummy-project)

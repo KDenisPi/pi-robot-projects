@@ -28,7 +28,7 @@
             "ad_convertor": "MCP3xxx",
             "pins": [
                 {"pin": 0, "type": "dustsensor", "gpio": {"provider": "SIMPLE", "pin": 11}},
-                {"pin": 1, "type": "tmp36"
+                {"pin": 1, "type": "tmp36"}
              ]
         }
     ]
