@@ -124,17 +124,20 @@ public:
 
             double res = 0.0;
             int data_idx=rcv_index * p->_data->get_size(); //index in result array
-            for(int j=0; j<p->N/2; j++){
+            int j, idx;
+            for(j=0; j<p->N/2; j++){
                 //calculate integrated value for interval
                 res += p->amp_level + 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
 
                 if(j>0 && (j%p->freq_interval)==0){
                     //printf("%d, [%d - %d], %4.2f\n", i/freq_interval, freq_sp*i_start, freq_sp*i, res/freq_interval);
-                    int idx = (j/p->freq_interval) - 1;
+                    idx = (j/p->freq_interval) - 1;
                     p->_data->buff[data_idx++] = ldata::colors[idx];
                     res = 0.0;
                 }
             }
+            idx = (j/p->freq_interval) - 1;
+            p->_data->buff[data_idx++] = ldata::colors[idx];
 
             //update atomic value - start send thread
             p->_data->idx = data_idx;
