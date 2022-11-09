@@ -18,14 +18,22 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#include <math.h>
+#include <time.h>
+#include <chrono>
+#include <ctime>
+
+#include<fftw3.h>
+
 #include "logger.h"
 #include "Threaded.h"
-
+#include "cmusicdata.h"
+#include "colors.h"
 namespace cmusic {
 
 class Receiver : public piutils::Threaded {
 public:
-    Receiver(const std::string& filename = "") : _filename(filename) {
+    Receiver(const std::shared_ptr<CMusicData>& data, const std::string& filename = "") : _filename(filename), _data(data) {
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source: " + filename);
         _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY));
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Sourec FD: " + std::to_string(_fd));
@@ -38,6 +46,18 @@ public:
             close(_fd);
             _fd = -1;
         }
+    }
+
+    bool start(){
+        return piutils::Threaded::start<Receiver>(this);
+    }
+
+    void stop(){
+        piutils::Threaded::stop();
+    }
+
+    void wait(){
+        piutils::Threaded::wait();
     }
 
     /**
@@ -65,6 +85,68 @@ public:
             logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Finished. Source is not ready");
             return;
         }
+
+        fload buff;
+        int rcv_index = 0;
+
+        double* in = (double*) fftw_malloc(sizeof(double) * p->N);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * p->N);
+        fftw_plan my_plan;
+
+        while(!p->is_stop_signal()){
+            bool success = true;
+            int rcv_offset = rcv_index*p->_data->get_size();
+
+            for(int i=0; i<p->N; i++){
+                size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff));
+                if(read_bytes==0){ //EOF
+                    logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Unexpected EOF");
+                    std::clog << "Unexpected EOF" << std::endl;
+                    success = false;
+                    break;
+                }
+                else if(read_bytes<0){
+                    logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " File read error Error: " + std::to_string(errno));
+                    std::cerr << "File read error Error: " << errno << std::endl;
+                    success = false;
+                    break;
+                }
+
+                in[i] = buff.fl;
+            }
+
+            if(!success){
+                break;
+            }
+
+            my_plan = fftw_plan_dft_r2c_1d(p->N, in, out, FFTW_ESTIMATE);
+            fftw_execute(my_plan);
+
+            double res = 0.0;
+            int data_idx=rcv_index * p->_data->get_size(); //index in result array
+            for(int j=0; j<p->N/2; j++){
+                //calculate integrated value for interval
+                res += p->amp_level + 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
+
+                if(j>0 && (j%p->freq_interval)==0){
+                    //printf("%d, [%d - %d], %4.2f\n", i/freq_interval, freq_sp*i_start, freq_sp*i, res/freq_interval);
+                    int idx = (j/p->freq_interval) - 1;
+                    p->_data->buff[data_idx++] = ldata::colors[idx];
+                    res = 0.0;
+                }
+            }
+
+            //update atomic value - start send thread
+            p->_data->idx = data_idx;
+            rcv_index = (rcv_index==1? 0 : 1);
+
+            logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Ready to send: " + std::to_string(data_idx));
+
+            fftw_destroy_plan(my_plan);
+        }
+
+        fftw_free(in);
+        fftw_free(out);
 
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Finished");
     }
@@ -126,9 +208,23 @@ public:
         return _filename.empty();
     }
 
+    std::shared_ptr<CMusicData> _data;
+
+    const int Freq = 40000;         //Frequency
+    const int N = 2000;             //Number samples for one time processing (50ms)
+    const int VIntervals = 50;
+    const double amp_level = 70.0;  //Amplitude change used for alignment values
+
+    /*
+    Frequesnce interval is th value we racognize as single value.
+    Example: we have 1000 (N/2) measurements for 20KHz (each for 20Hz interval) and 50 visual intervals
+    i.e. we will recognize 20 measurements as one (20*20=400Hz for one visualization)
+    */
+    const int freq_interval = (N/2)/VIntervals;
 private:
     int _fd;
     std::string _filename;
+
 };
 
 }//namespace

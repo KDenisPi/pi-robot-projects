@@ -46,7 +46,7 @@ message( STATUS "REAL_HARDWARE: ${REAL_HARDWARE}")
 find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME_BUILD})
 find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME_BUILD})
 
-set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} pthread dl curl crypt)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} fftw3 pthread dl curl crypt)
 
 #IF($ENV{USER} STREQUAL "pi")
 #    find_library(BCM_HOST_LIB bcm_host PATH "/opt/vc/lib")
