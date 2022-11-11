@@ -25,17 +25,20 @@
 
 #include<fftw3.h>
 
-#include "logger.h"
 #include "Threaded.h"
 #include "cmusicdata.h"
 #include "colors.h"
 namespace cmusic {
 
+/*
+arecord --file-type raw --channels=1 --rate=40000 --format=FLOAT_LE -D pulse  --buffer-size=0
+*/
+
 class Receiver : public piutils::Threaded {
 public:
     Receiver(const std::shared_ptr<CMusicData>& data, const std::string& filename = "") : _filename(filename), _data(data) {
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source: " + filename);
-        _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY));
+        _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY|O_SYNC));
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Sourec FD: " + std::to_string(_fd));
     }
 
@@ -49,14 +52,17 @@ public:
     }
 
     bool start(){
+        logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         return piutils::Threaded::start<Receiver>(this);
     }
 
     void stop(){
+        logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         piutils::Threaded::stop();
     }
 
     void wait(){
+        logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         piutils::Threaded::wait();
     }
 
@@ -88,32 +94,33 @@ public:
 
         fload buff;
         int rcv_index = 0;
-
         double* in = (double*) fftw_malloc(sizeof(double) * p->N);
         fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * p->N);
         fftw_plan my_plan;
+        std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
 
         while(!p->is_stop_signal()){
             bool success = true;
             int rcv_offset = rcv_index*p->_data->get_size();
 
+            tp_start = std::chrono::system_clock::now();
             for(int i=0; i<p->N; i++){
                 size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff));
                 if(read_bytes==0){ //EOF
                     logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Unexpected EOF");
-                    std::clog << "Unexpected EOF" << std::endl;
                     success = false;
                     break;
                 }
                 else if(read_bytes<0){
                     logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " File read error Error: " + std::to_string(errno));
-                    std::cerr << "File read error Error: " << errno << std::endl;
                     success = false;
                     break;
                 }
 
                 in[i] = buff.fl;
             }
+            tp_end = std::chrono::system_clock::now();
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count()));
 
             if(!success){
                 break;
@@ -143,7 +150,7 @@ public:
             p->_data->idx = data_idx;
             rcv_index = (rcv_index==1? 0 : 1);
 
-            logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Ready to send: " + std::to_string(data_idx));
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()));
 
             fftw_destroy_plan(my_plan);
         }

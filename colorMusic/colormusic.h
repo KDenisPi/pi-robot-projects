@@ -18,6 +18,7 @@
 #include "logger.h"
 #include "cmusicdata.h"
 #include "receiver.h"
+#include "sender.h"
 
 namespace cmusic {
 
@@ -31,9 +32,15 @@ public:
     ColorMusic(const std::string& filename){
         data = std::make_shared<CMusicData>(150);
         recv = std::make_shared<Receiver>(data, filename);
+        sendr = std::make_shared<Sender>(data);
     }
 
     virtual ~ColorMusic(){
+        stop();
+    }
+
+    void stop(){
+        sendr->stop();
         recv->stop();
     }
 
@@ -44,6 +51,7 @@ public:
      * @return false
      */
     bool start(){
+        sendr->start();
         return recv->start();
     }
 
@@ -54,7 +62,7 @@ public:
 
     std::shared_ptr<CMusicData> data;
     std::shared_ptr<Receiver> recv;
-
+    std::shared_ptr<Sender> sendr;
 };
 
 }//namespace

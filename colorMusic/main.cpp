@@ -30,6 +30,7 @@ int main (int argc, char* argv[])
         cmusic->wait();
     }
 
+    cmusic->stop();
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " finished");
     std::clog << "Finished " << success << std::endl;
