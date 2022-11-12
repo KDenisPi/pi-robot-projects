@@ -75,7 +75,7 @@ public:
             data_count = (i_idx%p->_data->get_size());
             data_idx = (i_idx/p->_data->get_size());
             load_loops = (p->sleds_count/data_count);
-        /*
+
             for(int loop=0; loop<load_loops; loop++){
                 std::memcpy((void*)&p->sleds_buff[loop*data_count],  (void*)p->_data->buff, sizeof(uint32_t)*data_count);
             }
@@ -83,7 +83,7 @@ public:
             if((p->sleds_count/data_count)>0){
                 std::memcpy((void*)&p->sleds_buff[load_loops*data_count],  (void*)p->_data->buff, sizeof(uint32_t)*(p->sleds_count%data_count));
             }
-        */
+
             logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " Data idx: " + std::to_string(data_idx) +
                 " Loops: " + std::to_string(load_loops) + " Tail: " + std::to_string(p->sleds_count%data_count));
 
