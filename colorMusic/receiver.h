@@ -150,6 +150,8 @@ public:
             p->_data->idx = data_idx;
             rcv_index = (rcv_index==1? 0 : 1);
 
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded: " + std::to_string(data_idx));
+
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()));
 
             fftw_destroy_plan(my_plan);

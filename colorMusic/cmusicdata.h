@@ -36,7 +36,7 @@ public:
     }
 
     std::atomic<int> idx;
-    uint32_t* buff;
+    uint32_t* buff = nullptr;
     int _bsize = 150;
 
 };
