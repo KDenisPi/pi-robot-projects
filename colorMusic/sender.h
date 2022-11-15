@@ -70,10 +70,20 @@ public:
 */
             i_idx = p->_data->idx;
 
-            logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " or finish " + std::to_string(p->is_stop_signal()));
+            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " or finish " + std::to_string(p->is_stop_signal()));
 
             data_count = (i_idx%p->_data->get_size());
             data_idx = (i_idx/p->_data->get_size());
+
+            if(p->is_stop_signal()){
+                break;
+            }
+
+            if(data_count==0){
+                logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Nothing to do Data " + std::to_string(i_idx));
+                continue;
+            }
+
             load_loops = (p->sleds_count/data_count);
 
             for(int loop=0; loop<load_loops; loop++){
@@ -91,10 +101,6 @@ public:
                 Send data to Arduino
             */
 
-
-            if(p->is_stop_signal()){
-                break;
-            }
         }
 
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");

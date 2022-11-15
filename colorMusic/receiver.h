@@ -134,23 +134,36 @@ public:
             int j, idx;
             for(j=0; j<p->N/2; j++){
                 //calculate integrated value for interval
-                res += p->amp_level + 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
+                res += 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
 
                 if(j>0 && (j%p->freq_interval)==0){
                     //printf("%d, [%d - %d], %4.2f\n", i/freq_interval, freq_sp*i_start, freq_sp*i, res/freq_interval);
-                    idx = (j/p->freq_interval) - 1;
-                    p->_data->buff[data_idx++] = ldata::colors[idx];
+
+                    res = (res/p->freq_interval) + p->amp_level;
+                    logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " value: " + std::to_string(res));
+                    //Set minimum level and do not use value less than it
+                    if(res>0){
+                        idx = (j/p->freq_interval) - 1;
+                        int vol_idx = (int)((res/10)<3 ? (res/10) : 2);
+                        p->_data->buff[data_idx++] = ldata::colors[idx + vol_idx];
+                    }
                     res = 0.0;
                 }
             }
-            idx = (j/p->freq_interval) - 1;
-            p->_data->buff[data_idx++] = ldata::colors[idx];
+
+            res = (res/p->freq_interval) + p->amp_level;
+            //Set minimum level and do not use value less than it
+            if(res>0){
+                idx = (j/p->freq_interval) - 1;
+                int vol_idx = (int)((res/10)<3 ? (res/10) : 2);
+                p->_data->buff[data_idx++] = ldata::colors[idx + vol_idx];
+            }
 
             //update atomic value - start send thread
             p->_data->idx = data_idx;
             rcv_index = (rcv_index==1? 0 : 1);
 
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded: " + std::to_string(data_idx));
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " has value: " + std::to_string((data_idx>=150 ? data_idx-150 : data_idx)));
 
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()));
 
@@ -225,7 +238,7 @@ public:
     const int Freq = 40000;         //Frequency
     const int N = 2000;             //Number samples for one time processing (50ms)
     const int VIntervals = 50;
-    const double amp_level = 70.0;  //Amplitude change used for alignment values
+    const double amp_level = 0.0;  //Amplitude change used for alignment values
 
     /*
     Frequesnce interval is th value we racognize as single value.
