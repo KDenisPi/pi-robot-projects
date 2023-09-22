@@ -134,10 +134,11 @@ public:
             int j, idx;
             for(j=0; j<p->N/2; j++){
                 //calculate integrated value for interval
+                printf("%d, %4.2f, %4.2f\n", j, out[j][0], out[j][1]);
                 res += 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
 
                 if(j>0 && (j%p->freq_interval)==0){
-                    //printf("%d, [%d - %d], %4.2f\n", i/freq_interval, freq_sp*i_start, freq_sp*i, res/freq_interval);
+                    printf("%d, %4.2f, %d\n", j, res, p->freq_interval);
 
                     res = (res/p->freq_interval) + p->amp_level;
                     logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " value: " + std::to_string(res));
