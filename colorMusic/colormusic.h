@@ -30,9 +30,9 @@ public:
      * @param filename
      */
     ColorMusic(const std::string& filename){
-        data = std::make_shared<CMusicData>(150);
-        recv = std::make_shared<Receiver>(data, filename);
-        sendr = std::make_shared<Sender>(data);
+        _data = std::make_shared<CMusicData>(150);
+        _recv = std::make_shared<Receiver>(_data, filename);
+        _sendr = std::make_shared<Sender>(_data);
     }
 
     virtual ~ColorMusic(){
@@ -40,29 +40,34 @@ public:
     }
 
     void stop(){
-        sendr->stop();
-        recv->stop();
+        _sendr->stop();
+        _recv->stop();
     }
 
     /**
-     * @brief
+     * @brief Start Sender and receiver
      *
      * @return true
      * @return false
      */
     bool start(){
-        sendr->start();
-        return recv->start();
+        _sendr->start();
+        return _recv->start();
     }
 
+    /**
+     * @brief Wait untill we have something to process
+     *
+     */
     void wait(){
-        recv->wait();
+        _recv->wait();
     }
 
+private:
 
-    std::shared_ptr<CMusicData> data;
-    std::shared_ptr<Receiver> recv;
-    std::shared_ptr<Sender> sendr;
+    std::shared_ptr<CMusicData> _data;
+    std::shared_ptr<Receiver> _recv;
+    std::shared_ptr<Sender> _sendr;
 };
 
 }//namespace

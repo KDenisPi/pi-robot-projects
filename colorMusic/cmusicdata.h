@@ -17,6 +17,10 @@
 
 namespace cmusic {
 
+/**
+ * @brief Service class for saving chunk processing
+ *
+ */
 class CMusicData {
 public:
     CMusicData(const int bsize = 150) : _bsize(bsize) {
@@ -38,7 +42,6 @@ public:
     std::atomic<int> idx;
     uint32_t* buff = nullptr;
     int _bsize = 150;
-
 };
 
 }

@@ -72,7 +72,7 @@ public:
      */
     using fload = union {
         float fl;
-        uint8_t ch[4];
+        uint8_t ch[sizeof(float)];
     };
 
     /**
@@ -94,18 +94,23 @@ public:
 
         fload buff;
         int rcv_index = 0;
-        double* in = (double*) fftw_malloc(sizeof(double) * p->N);
-        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * p->N);
+
+        /*
+        FFT data (In, Out, Plan)
+        */
+        double* in = (double*) fftw_malloc(sizeof(double) * p->chunk_size());
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * p->chunk_size());
         fftw_plan my_plan;
+
         std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
+        bool success = true;
 
         while(!p->is_stop_signal()){
-            bool success = true;
             int rcv_offset = rcv_index*p->_data->get_size();
 
             tp_start = std::chrono::system_clock::now();
-            for(int i=0; i<p->N; i++){
-                size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff));
+            for(int i=0; i<p->chunk_size(); i++){
+                size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff.fl));
                 if(read_bytes==0){ //EOF
                     logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Unexpected EOF");
                     success = false;
@@ -116,25 +121,38 @@ public:
                     success = false;
                     break;
                 }
+                else if(read_bytes<sizeof(buff.fl)){
+                    logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " File read less than should: " + std::to_string(read_bytes));
+                }
 
                 in[i] = buff.fl;
             }
             tp_end = std::chrono::system_clock::now();
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count()));
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded for (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count()));
 
             if(!success){
                 break;
             }
 
-            my_plan = fftw_plan_dft_r2c_1d(p->N, in, out, FFTW_ESTIMATE);
+            my_plan = fftw_plan_dft_r2c_1d(p->chunk_size(), in, out, FFTW_ESTIMATE);
             fftw_execute(my_plan);
 
             double res = 0.0;
-            int data_idx=rcv_index * p->_data->get_size(); //index in result array
             int j, idx;
-            for(j=0; j<p->N/2; j++){
-                //calculate integrated value for interval
-                //printf("%d, %4.2f, %4.2f\n", j, out[j][0], out[j][1]);
+            int data_idx = rcv_index * p->_data->get_size(); //index in result array
+            for(j=0; j<p->chunk_size()/2; j++){
+                /*
+                1. Ignore empty value
+                2. Ignore negative values (?)
+
+                */
+                if(out[j][0]==0 && out[j][1]==0){
+                    continue;
+                }
+
+                const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
+
+
                 if(out[j][0]!=0 || out[j][1]!=0){
                     const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
                     printf("%d, %4.2f\n", j, val);
@@ -241,17 +259,74 @@ public:
 
     std::shared_ptr<CMusicData> _data;
 
-    const int Freq = 40000;         //Frequency
-    const int N = 2000;             //Number samples for one time processing (50ms)
-    const int VIntervals = 50;
-    const double amp_level = 0.0;  //Amplitude change used for alignment values
+    /**
+     * @brief Return base frequesncy
+     *
+     * @return const int
+     */
+    const int freqency() const {
+        return _freq;
+    }
+
+    /**
+     * @brief Return number of samples for one chunk.
+     *
+     * @return const int
+     */
+    const int chunk_size() const {
+        return _n;
+    }
+
+    /**
+     * @brief Return volume level modifier
+     *
+     * @return const double
+     */
+    const double level_correction() const {
+        return _amp_level;
+    }
+
+    void set_level_correction(const double amp_level){
+        _amp_level = amp_level;
+    }
+
+    /**
+     * @brief Frequence processing pprecision (100Hz)
+     *
+     * @return const int
+     */
+    static const int freq_precision(){
+        return _freqence_precision;
+    }
+
+    /**
+     * @brief Frequence interval (5 samples for 100Hz)
+     *
+     * @return const int
+     */
+    static const int freq_interval() {
+        return _freq_interval;
+    }
+
+private:
+    static const int _freq = 40000;     //Base frequency. Constant (samples/sec) - 40000
+    static const int _n = 2000;         //Number samples for one time processing - 2000
+                                        //Time interval covered by this number of samples: 40000/2000=20; 1000ms/20 = 50ms
+    static const int _freqence_precision = 100; //100Hz
+    static const int _freq_interval = (_n/2)/_freqence_precision;
+
+private:
+    double _amp_level = 0.0;    //Amplitude change used for alignment values
 
     /*
     Frequesnce interval is th value we racognize as single value.
-    Example: we have 1000 (N/2) measurements for 20KHz (each for 20Hz interval) and 50 visual intervals
-    i.e. we will recognize 20 measurements as one (20*20=400Hz for one visualization)
+    Example: we have 1000 (N/2) measurements for 20KHz (each for 20Hz interval) i.e. 20Hz per sample
+    id we would like to recognize frequency with prrecisely 100Hz we should analyze 5 samples as one
+    (200 visualization intervals)
+
+    Otherwise if we have 50 intervals for visualization interval will be 20000Hz/50 = 400Hz per interval
+    i.e. we will recognize 20 measurements as one (400Hz/20Hz=20 samples)
     */
-    const int freq_interval = (N/2)/VIntervals;
 private:
     int _fd;
     std::string _filename;
