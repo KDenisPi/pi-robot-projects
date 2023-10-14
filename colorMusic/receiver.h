@@ -150,6 +150,7 @@ public:
                     continue;
                 }
 
+
                 const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
 
 
@@ -282,12 +283,12 @@ public:
      *
      * @return const double
      */
-    const double level_correction() const {
-        return _amp_level;
+    const double power_correction() const {
+        return _power_level;
     }
 
-    void set_level_correction(const double amp_level){
-        _amp_level = amp_level;
+    void set_power_correction(const double amp_level){
+        _power_level = amp_level;
     }
 
     /**
@@ -310,13 +311,57 @@ public:
 
 private:
     static const int _freq = 40000;     //Base frequency. Constant (samples/sec) - 40000
+    //
+    // We will try to process by 50ms chunk
+    // 50ms = 1/20 sec; 40000 sm/sec * 0.05 = 2000
     static const int _n = 2000;         //Number samples for one time processing - 2000
-                                        //Time interval covered by this number of samples: 40000/2000=20; 1000ms/20 = 50ms
+
+    /*
+    The array you are showing is the Fourier Transform coefficients of the audio signal.
+    These coefficients can be used to get the frequency content of the audio.
+    The FFT is defined for complex valued input functions, so the coefficients you get out will be imaginary numbers
+    even though your input is all real values. In order to get the amount of power in each frequency,
+    you need to calculate the magnitude of the FFT coefficient for each frequency.
+    This is not just the real component of the coefficient, you need to calculate the square root of
+    the sum of the square of its real and imaginary components.
+    That is, if your coefficient is a + b*j, then its magnitude is sqrt(a^2 + b^2).
+
+    Once you have calculated the magnitude of each FFT coefficient,
+    you need to figure out which audio frequency each FFT coefficient belongs to.
+    An N point FFT will give you the frequency content of your signal at N equally spaced frequencies, starting at 0.
+    Because your sampling frequency is 44100 samples / sec. and the number of points in your FFT is 256,
+    your frequency spacing is 44100 / 256 = 172 Hz (approximately)
+
+
+    My case: 40000 samples/sec, the number of points in FFT is 2000
+    40000/2000 = 20 Hz
+
+    The first coefficient in your array will be the 0 frequency coefficient. That is basically the average power level
+    for all frequencies. The rest of your coefficients will count up from 0 in multiples of 172 Hz until you get to 128.
+    In an FFT, you only can measure frequencies up to half your sample points. Read these links on the Nyquist Frequency and
+    Nyquist-Shannon Sampling Theorem if you are a glutton for punishment and need to know why,
+    but the basic result is that your lower frequencies are going to be replicated or aliased in the higher frequency buckets.
+    So the frequencies will start from 0, increase by 172 Hz for each coefficient up to the N/2 coefficient,
+    then decrease by 172 Hz until the N - 1 coefficient.
+
+    My case: It means that we will be able to measure frequence in interval between 20*1000=20000 (0 - 20KHz)
+
+
+    Note: That is basically the average power level for all frequencies. (!)
+    */
+
+   // (freq/n)*(n/2) = freq/2
+   // My case: It means that we will be able to measure frequence in interval between 20*1000=20000 (0 - 20KHz)
+   static const int _max_frequency = _freq/2;
+
+    //minimum frequency interval we would like to recognize
     static const int _freqence_precision = 100; //100Hz
-    static const int _freq_interval = (_n/2)/_freqence_precision;
+
+    //number of intervals
+    static const int _freq_interval = _max_frequency/_freqence_precision;
 
 private:
-    double _amp_level = 0.0;    //Amplitude change used for alignment values
+    double _power_level = 0.0;    //Amplitude change used for alignment values
 
     /*
     Frequesnce interval is th value we racognize as single value.
