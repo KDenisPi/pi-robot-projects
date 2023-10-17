@@ -39,6 +39,10 @@ public:
         return _bsize;
     }
 
+    const void clear(const int index) {
+        std::memset(&buff[index*get_size()], 0x00, get_size()*sizeof(uint32_t));
+    }
+
     std::atomic<int> idx;
     uint32_t* buff = nullptr;
     int _bsize = 150;

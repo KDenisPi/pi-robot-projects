@@ -30,7 +30,7 @@ public:
      * @param filename
      */
     ColorMusic(const std::string& filename){
-        _data = std::make_shared<CMusicData>(150);
+        _data = std::make_shared<CMusicData>(Receiver::freq_interval());
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
     }

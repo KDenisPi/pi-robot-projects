@@ -105,8 +105,13 @@ public:
         std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
         bool success = true;
 
+        //chunks per measurement interval
+        const int i_chunks = p->freq_precision()/p->freq_chunk();
+        logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Chunks per interval: " + std::to_string(i_chunks));
+
         while(!p->is_stop_signal()){
             int rcv_offset = rcv_index*p->_data->get_size();
+            p->_data->clear(rcv_index);
 
             tp_start = std::chrono::system_clock::now();
             for(int i=0; i<p->chunk_size(); i++){
@@ -141,47 +146,40 @@ public:
             int j, idx;
             int data_idx = rcv_index * p->_data->get_size(); //index in result array
             for(j=0; j<p->chunk_size()/2; j++){
+
                 /*
                 1. Ignore empty value
                 2. Ignore negative values (?)
-
                 */
-                if(out[j][0]==0 && out[j][1]==0){
-                    continue;
+                if(j==0){
+                        printf("First value [%4.2f][%4.2f]\n", out[j][0], out[j][1]);
                 }
-
-
-                const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
-
 
                 if(out[j][0]!=0 || out[j][1]!=0){
                     const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
-                    printf("%d, %4.2f\n", j, val);
-                    res += val;
+                    if(val>0){ //debug
+                        printf("%d, Freq: %d, %4.2f\n", j, j*p->freq_chunk(), val);
+                    }
+
+                    if(val>res){
+                        res = val;
+                    }
                 }
 
-                if(j>0 && (j%p->freq_interval)==0){
-                    if(res>0)
-                        printf("%d, %4.2f, %d\n", j, res, (j/p->freq_interval));
+                if(j>0 && (j%i_chunks)==0 && res>0){
+                    const int i_idx = j/i_chunks;
+                    printf("%d, Freq: [%d-%d], Val: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
 
-                    res = (res/p->freq_interval) + p->amp_level;
                     logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " value: " + std::to_string(res));
-                    //Set minimum level and do not use value less than it
-                    if(res>0){
-                        idx = (j/p->freq_interval) - 1;
-                        int vol_idx = (int)((res/10)<3 ? (res/10) : 2);
-                        p->_data->buff[data_idx++] = ldata::colors[idx + vol_idx];
-                    }
+                    p->_data->buff[i_idx-1] = (uint32_t)round(res);
                     res = 0.0;
                 }
             }
 
-            res = (res/p->freq_interval) + p->amp_level;
-            //Set minimum level and do not use value less than it
             if(res>0){
-                idx = (j/p->freq_interval) - 1;
-                int vol_idx = (int)((res/10)<3 ? (res/10) : 2);
-                p->_data->buff[data_idx++] = ldata::colors[idx + vol_idx];
+                const int i_idx = j/i_chunks;
+                printf("%d, Freq: [%d-%d], Val: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
+                p->_data->buff[i_idx-1] = (uint32_t)round(res);
             }
 
             //update atomic value - start send thread
@@ -307,6 +305,10 @@ public:
      */
     static const int freq_interval() {
         return _freq_interval;
+    }
+
+    const int freq_chunk() const {
+        return _freq/_n;
     }
 
 private:
