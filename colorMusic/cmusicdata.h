@@ -23,7 +23,7 @@ namespace cmusic {
  */
 class CMusicData {
 public:
-    CMusicData(const int bsize = 150) : _bsize(bsize) {
+    CMusicData(const int bsize) : _bsize(bsize) {
         buff = new uint32_t[_bsize*2];
     }
 
@@ -43,9 +43,13 @@ public:
         std::memset(&buff[index*get_size()], 0x00, get_size()*sizeof(uint32_t));
     }
 
+    const int get_idx() const {
+        return idx;
+    }
+
     std::atomic<int> idx;
     uint32_t* buff = nullptr;
-    int _bsize = 150;
+    int _bsize;
 };
 
 }

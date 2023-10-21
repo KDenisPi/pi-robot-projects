@@ -144,50 +144,44 @@ public:
 
             double res = 0.0;
             int j, idx;
-            int data_idx = rcv_index * p->_data->get_size(); //index in result array
+
+            p->set_power_correction(0.0);
             for(j=0; j<p->chunk_size()/2; j++){
 
                 /*
                 1. Ignore empty value
                 2. Ignore negative values (?)
                 */
-                if(j==0){
-                        printf("First value [%4.2f][%4.2f]\n", out[j][0], out[j][1]);
-                }
-
                 if(out[j][0]!=0 || out[j][1]!=0){
                     const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
-                    if(val>0){ //debug
-                        printf("%d, Freq: %d, %4.2f\n", j, j*p->freq_chunk(), val);
-                    }
-
-                    if(val>res){
+                    if(val>res)
                         res = val;
+
+                    if(j==0 && val>0){
+                        //printf("First value [%4.2f][%4.2f]\n", out[j][0], out[j][1]);
+                        p->set_power_correction(val);
                     }
                 }
 
-                if(j>0 && (j%i_chunks)==0 && res>0){
+                if(j>0 && (j%i_chunks)==0){
                     const int i_idx = j/i_chunks;
-                    printf("%d, Freq: [%d-%d], Val: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
+                    //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
+                    if(res>0)
+                        p->_data->buff[i_idx-1] = (uint32_t)round(res);
 
-                    logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " value: " + std::to_string(res));
-                    p->_data->buff[i_idx-1] = (uint32_t)round(res);
                     res = 0.0;
                 }
             }
 
+            const int i_idx = j/i_chunks;
+            //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
             if(res>0){
-                const int i_idx = j/i_chunks;
-                printf("%d, Freq: [%d-%d], Val: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
                 p->_data->buff[i_idx-1] = (uint32_t)round(res);
             }
 
             //update atomic value - start send thread
-            p->_data->idx = data_idx;
+            p->_data->idx = rcv_index;
             rcv_index = (rcv_index==1? 0 : 1);
-
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " has value: " + std::to_string((data_idx>=150 ? data_idx-150 : data_idx)));
-
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()));
 
             fftw_destroy_plan(my_plan);
