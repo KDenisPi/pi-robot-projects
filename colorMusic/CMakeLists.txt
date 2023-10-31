@@ -28,7 +28,7 @@ message( STATUS "GCC is ${CMAKE_CXX_COMPILER_VERSION}")
 message( STATUS "CMAKE_CXX_FLAGS:  ${CMAKE_CXX_FLAGS}" )
 
 #Pi-Robot folder
-set(PI_ROBOT_HOME ${PROJECT_SOURCE_DIR}/../../pi-robot-debian)
+set(PI_ROBOT_HOME ${PROJECT_SOURCE_DIR}/../../pi-robot)
 set(PI_ROBOT_HOME_BUILD ${PI_ROBOT_HOME}/build)
 message(STATUS "PI_ROBOT_HOME:  ${PI_ROBOT_HOME}")
 

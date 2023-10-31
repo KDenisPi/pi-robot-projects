@@ -11,8 +11,10 @@
 #ifndef COLORS_MAP_H
 #define COLORS_MAP_H
 
-#include <stdint.h>
+#include <cstdint>
+
  namespace ldata {
+    
  uint32_t colors[150] = {
 0x104060,0x114362,0x124664,
 0x104068,0x11436A,0x12466C,

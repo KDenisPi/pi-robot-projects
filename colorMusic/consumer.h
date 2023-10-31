@@ -12,7 +12,7 @@
 #ifndef CMUSIC_CONSUMER
 #define CMUSIC_CONSUMER
 
-#include <unistd.h>
+#include <cstdint>
 
 namespace cmusic {
 
