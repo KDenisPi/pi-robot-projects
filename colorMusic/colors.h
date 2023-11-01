@@ -14,7 +14,7 @@
 #include <cstdint>
 
  namespace ldata {
-    
+
  uint32_t colors150[150] = {
 0x104060,0x114362,0x124664,
 0x104068,0x11436A,0x12466C,
@@ -75,6 +75,7 @@ uint32_t colors32[32] = {
     0xFF0101, 0xFF3001, 0xFF6001, 0xFF6080, 0xFF6090, 0xFF60A0, 0xFF60B0, 0xFF60C0  //red
 };
 
+uint32_t color_black = 0xf8f8f8;
 
 }
 

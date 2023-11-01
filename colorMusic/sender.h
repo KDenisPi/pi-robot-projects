@@ -19,7 +19,7 @@
 
 #include "Threaded.h"
 #include "cmusicdata.h"
-#include "consumer.h"
+#include "consumer_html.h"
 
 namespace cmusic {
 
@@ -51,10 +51,13 @@ public:
 
     static void worker(Sender* psend){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Started");
+
         int i_idx = 0;      //Index for received values
         const int data_count = 0; //Number of received values
         int data_idx = 0;
         int load_loops = 0; //The number of loops necessary for destination array filling
+
+        std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
 
         auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
         for(;;){
@@ -73,6 +76,8 @@ public:
             }
 
             data_idx = (i_idx==0 ? 0 : psend->get_size());
+            chtml->process(&psend->_data->buff[data_idx] , psend->get_size());
+
 
 /*             if(data_count==0){
                 logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Nothing to do Data " + std::to_string(i_idx));
