@@ -70,12 +70,20 @@ public:
             return;
         }
 
+        processing_start();
+
+        int not_empty_counter = 0;
+
         _fd << "<tr>" << std::endl;
         for(int i=0; i<d_size; i++){
             int color = ((i/6)<32 ? i/6 : 31);
             _fd << "<td style=\"background-color:#" << std::hex << (data[i]==0 ? ldata::color_black : ldata::colors32[color]) << ";\">" << std::to_string(color) <<"</td>" ;
+            if(data[i] > 0)
+                not_empty_counter++;
         }
         _fd << "</tr>"<< std::endl;
+
+        logger::log(logger::LLOG::DEBUG, "html", std::string(__func__) + " Processed for (ms): " + processing_end() + " Values: " + std::to_string(not_empty_counter));
 
         _line_count++;
     }

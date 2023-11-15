@@ -69,22 +69,16 @@ public:
 
             i_idx = psend->_data->idx;
 
-            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data index" + std::to_string(i_idx) + " or finish " + std::to_string(psend->is_stop_signal()));
+            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data index: " + std::to_string(i_idx) + " or finish " + std::to_string(psend->is_stop_signal()));
 
             if(psend->is_stop_signal()){
                 break;
             }
 
             data_idx = (i_idx==0 ? 0 : psend->get_size());
-            chtml->process(&psend->_data->buff[data_idx] , psend->get_size());
-
-
-/*             if(data_count==0){
-                logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Nothing to do Data " + std::to_string(i_idx));
-                continue;
-            }
- */
             logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " Data idx: " + std::to_string(data_idx));
+
+            chtml->process(&psend->_data->buff[data_idx] , psend->get_size());
         }
 
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");

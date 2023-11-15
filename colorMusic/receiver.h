@@ -144,6 +144,7 @@ public:
 
             double res = 0.0;
             int j, idx;
+            int not_empty_counter = 0;
 
             p->set_power_correction(0.0);
             for(j=0; j<p->chunk_size()/2; j++){
@@ -166,8 +167,10 @@ public:
                 if(j>0 && (j%i_chunks)==0){
                     const int i_idx = j/i_chunks;
                     //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
-                    if(res>0)
+                    if(res>0){
                         p->_data->buff[i_idx-1] = (uint32_t)round(res);
+                        not_empty_counter++;
+                    }
 
                     res = 0.0;
                 }
@@ -177,12 +180,15 @@ public:
             //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
             if(res>0){
                 p->_data->buff[i_idx-1] = (uint32_t)round(res);
+                not_empty_counter++;
             }
 
             //update atomic value - start send thread
             p->_data->idx = rcv_index;
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()) +
+                " Values detected: " + std::to_string(not_empty_counter) + " Index: " + std::to_string(rcv_index));
+
             rcv_index = (rcv_index==1? 0 : 1);
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()));
 
             fftw_destroy_plan(my_plan);
         }

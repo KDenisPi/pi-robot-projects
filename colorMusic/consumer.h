@@ -28,6 +28,19 @@ public:
      * @param d_size
      */
     virtual void process(const uint32_t* data, const int d_size) = 0;
+
+    void processing_start() {
+        this->tp_start = std::chrono::system_clock::now();
+    }
+
+    const std::string processing_end(){
+        auto tp_end = std::chrono::system_clock::now();
+        return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - this->tp_start).count());
+    }
+
+private:
+    std::chrono::time_point<std::chrono::system_clock> tp_start;
+
 };
 
 }
