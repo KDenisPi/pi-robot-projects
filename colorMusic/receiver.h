@@ -168,7 +168,7 @@ public:
                     const int i_idx = j/i_chunks;
                     //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
                     if(res>0){
-                        p->_data->buff[i_idx-1] = (uint32_t)round(res);
+                        p->_data->buff[rcv_offset + i_idx-1] = (uint32_t)round(res);
                         not_empty_counter++;
                     }
 
@@ -179,7 +179,7 @@ public:
             const int i_idx = j/i_chunks;
             //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
             if(res>0){
-                p->_data->buff[i_idx-1] = (uint32_t)round(res);
+                p->_data->buff[rcv_offset + i_idx-1] = (uint32_t)round(res);
                 not_empty_counter++;
             }
 
