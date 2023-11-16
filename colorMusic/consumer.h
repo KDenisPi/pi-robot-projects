@@ -16,6 +16,8 @@
 
 namespace cmusic {
 
+using Tp = std::chrono::time_point<std::chrono::system_clock>;
+
 class Consumer {
 public:
     Consumer() {}
@@ -29,17 +31,14 @@ public:
      */
     virtual void process(const uint32_t* data, const int d_size) = 0;
 
-    void processing_start() {
-        this->tp_start = std::chrono::system_clock::now();
+    const Tp processing_start() {
+        return std::chrono::system_clock::now();
     }
 
-    const std::string processing_end(){
+    const std::string processing_end(const Tp tp_start){
         auto tp_end = std::chrono::system_clock::now();
-        return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - this->tp_start).count());
+        return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count());
     }
-
-private:
-    std::chrono::time_point<std::chrono::system_clock> tp_start;
 
 };
 
