@@ -24,8 +24,13 @@ namespace cmusic {
 
 class CmrHtml : public Consumer {
 public:
-    CmrHtml(const int ln_pfile = 200, const std::string rdir = "./") :
-        _max_lines_per_file(ln_pfile), _root_dir(rdir) {
+    /**
+     * @brief Construct a new Cmr Html object
+     *
+     * @param ln_pfile
+     * @param rdir
+     */
+    CmrHtml(const int ln_pfile = 200, const std::string rdir = "./") : Consumer(200, false), _max_lines_per_file(ln_pfile), _root_dir(rdir){
 
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__));
         open(0);
@@ -37,42 +42,84 @@ public:
         close();
     }
 
-    const bool is_ready() const {
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    bool start(){
+        logger::log(logger::LLOG::INFO, "consm", std::string(__func__));
+        return piutils::Threaded::start<CmrHtml>(this);
+    }
+
+
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    virtual const bool is_ready(){
         return _fd.is_open();
     }
 
     /**
      *
     */
-    virtual void process(const uint32_t* data, const int d_size){
+    static void worker(CmrHtml* p){
+        logger::log(logger::LLOG::INFO, "html", std::string(__func__) + " Started");
 
-        if(!is_ready())
-            return;
+        auto fn = [p]{return (p->is_stop_signal() || p->is_busy());};
+        for(;;){
+            {
+                std::unique_lock<std::mutex> lk(p->cv_m);
+                p->cv.wait(lk, fn);
+            }
 
-        auto tp_start = processing_start();
+            if(p->is_stop_signal()){
+                logger::log(logger::LLOG::INFO, "html", std::string(__func__) + " Stop signal detected");
+                break;
+            }
 
+            auto tp_start = p->processing_start();
+
+            int not_empty_counter = p->process_data();
+
+            logger::log(logger::LLOG::DEBUG, "html", std::string(__func__) + " Processed for (ms): " + p->processing_end(tp_start) + " Values: " + std::to_string(not_empty_counter));
+
+            p->set_busy(false);
+        }
+
+        logger::log(logger::LLOG::INFO, "html", std::string(__func__) + " Finished");
+    }
+
+    /**
+     * @brief
+     *
+     * @return const int
+     */
+    const int process_data(){
         int not_empty_counter = 0;
-
+        //start line
         _fd << "<tr>" << std::endl;
         _fd << "<td>" << std::to_string(_line_count) << "</td>" << std::endl;
-        for(int i=0; i<_chunk_number; i++){
-            if(i<d_size){
-                int color = ((i/6)<32 ? i/6 : 31);
-                _fd << "<td style=\"background-color:#" << std::hex << (data[i]==0 ? ldata::color_black : ldata::colors32[color]) << ";\">" << std::to_string(color) <<"</td>" ;
-                if(data[i] > 0)
-                    not_empty_counter++;
-            }
-            else
-                _fd << "<td>" << "na" << "</td>";
+
+        for(int i=0; i<items_count(); i++){
+            int color = ((i/6)<32 ? i/6 : 31);
+            _fd << "<td style=\"background-color:#" << std::hex << (_data[i]==0 ? ldata::color_black : ldata::colors32[color]) << ";\">" << std::to_string(color) <<"</td>" ;
+            if(_data[i] > 0)
+                not_empty_counter++;
         }
         _fd << "</tr>"<< std::endl;
 
-        logger::log(logger::LLOG::DEBUG, "html", std::string(__func__) + " Processed for (ms): " + processing_end(tp_start) + " Values: " + std::to_string(not_empty_counter));
         _line_count++;
 
         if(_line_count>=_max_lines_per_file){
             reopen();
         }
+
+        return not_empty_counter;
     }
 
 private:
@@ -94,11 +141,13 @@ private:
             _fd << _table_b;
             _fd << "<tr>\n";
             _fd << "<th>" << "chunk" << "</th>";
-            for(int i=0; i<_chunk_number; i++){
+            for(int i=0; i<items_count(); i++){
                 _fd << "<th>" << std::to_string(i) << "</th>";
             }
             _fd << "</tr>\n";
         }
+
+        logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__) + " status: "  + std::to_string(_fd.is_open()));
     }
 
     /**
@@ -125,8 +174,6 @@ private:
     std::ofstream _fd;
     int _max_lines_per_file = 200;  //maximum number lines per file
     std::string _root_dir = "./";     //folder for file generating
-
-    const int _chunk_number = 200;
 
     int _line_count = 0;
     int _part = 0;

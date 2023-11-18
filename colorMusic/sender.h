@@ -58,6 +58,7 @@ public:
         int load_loops = 0; //The number of loops necessary for destination array filling
 
         std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
+        chtml->start();
 
         auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
         for(;;){
@@ -81,6 +82,7 @@ public:
             chtml->process(&psend->_data->buff[data_idx] , psend->get_size());
         }
 
+        chtml->stop();
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");
     }
 
