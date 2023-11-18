@@ -105,10 +105,10 @@ public:
         _fd << "<tr>" << std::endl;
         _fd << "<td>" << std::to_string(_line_count) << "</td>" << std::endl;
 
+        int color;
         for(int i=0; i<items_count(); i++){
-            int color = ((i/6)<32 ? i/6 : 31);
-            _fd << "<td style=\"background-color:#" << std::hex << (_data[i]==0 ? ldata::color_black : ldata::colors32[color]) << ";\">" << std::to_string(color) <<"</td>" ;
-            if(_data[i] > 0)
+            _fd << "<td style=\"background-color:#" << std::hex << _data[i] << ";\">" << std::to_string(color) <<"</td>" ;
+            if(_data[i] != ldata::color_black)
                 not_empty_counter++;
         }
         _fd << "</tr>"<< std::endl;

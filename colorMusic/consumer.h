@@ -78,6 +78,8 @@ public:
 
         bool trans = transformate_data(data, d_size);
         if(trans){
+            bool fr2col = freq_to_color();
+
             set_busy(true);
             cv.notify_one();
         }
@@ -149,13 +151,58 @@ private:
      */
     virtual bool transformate_data(const uint32_t* data, const int d_size){
         //the simplest scenario - inpur and cunsumer data have the same size and no data extension
-        if(d_size==_items_count && !_extend_data){
+        if(d_size ==_items_count){
             for(int i=0; i<_items_count; i++)
                 _data[i] = data[i];
             return true;
         }
 
+        //
+        if(d_size > _items_count){
+            const uint32_t idx = d_size/_items_count;   //group values by
+            int j = 0;
+            uint32_t val = 0;
+
+            while(j < (_items_count-1)){
+                val = 0;
+                for(int kg_idx = j*idx; kg_idx<((j+1)*idx); kg_idx++){
+                    if(data[kg_idx]>val)
+                        val = data[kg_idx];
+                }
+                _data[j] = val;
+                j++;
+            }
+
+            val = 0;
+            for(int kg_idx = j*idx; kg_idx<d_size; kg_idx++){
+                if(data[kg_idx]>val)
+                    val = data[kg_idx];
+            }
+            _data[j] = val;
+
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    virtual bool freq_to_color(){
+        int color;
+        for(int i=0; i<items_count(); i++){
+            if(items_count() == ldata::pal_size_32)
+                color = i;
+            else
+                color = ((i/6) < ldata::pal_size_32 ? i/6 : ldata::pal_size_32-1);
+
+            _data[i] = (_data[i]==0 ? ldata::color_black : ldata::colors32[color]);
+        }
+        return true;
     }
 
     int _items_count;      //number of output items supported by this consumer
