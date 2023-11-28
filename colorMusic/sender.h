@@ -19,15 +19,22 @@
 
 #include "Threaded.h"
 #include "cmusicdata.h"
+#include "fft_processor.h"
 #include "consumer_html.h"
 
 namespace cmusic {
 
 class Sender : public piutils::Threaded {
 public:
-    Sender(const std::shared_ptr<CMusicData>& data, const int sleds=300) : _data(data){
+    Sender(const CrossDataPtr& data, const int sleds=300) : _data(data){
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
+
+        _data_out = OutData(new uint32_t[FftProc::freq_interval()]);
+        _data_out_len = FftProc::freq_interval();
     }
+
     virtual ~Sender() {
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
     }
 
     bool start(){
@@ -57,6 +64,7 @@ public:
         int data_idx = 0;
         int load_loops = 0; //The number of loops necessary for destination array filling
 
+        std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
         std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
         chtml->start();
 
@@ -79,7 +87,10 @@ public:
             data_idx = (i_idx==0 ? 0 : psend->get_size());
             logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " Data idx: " + std::to_string(data_idx));
 
-            chtml->process(&psend->_data->buff[data_idx] , psend->get_size());
+
+            fft_proc->process(&psend->_data->buff[data_idx] , psend->get_size(), psend->_data_out, psend->d_size());
+
+            chtml->process(psend->_data_out , psend->get_size());
         }
 
         chtml->stop();
@@ -87,7 +98,14 @@ public:
     }
 
 public:
-    std::shared_ptr<CMusicData> _data;
+
+    const int d_size() const {
+        return _data_out_len;
+    }
+
+    CrossDataPtr _data;  //raw data received from received
+    OutData _data_out;     //data prepeared for output
+    int _data_out_len;
 };
 
 }

@@ -3,9 +3,9 @@
  * @author your name (you@domain.com)
  * @brief
  * @version 0.1
- * @date 2022-11-08
+ * @date 2023-11-27
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 
@@ -21,10 +21,11 @@ namespace cmusic {
  * @brief Service class for saving chunk processing
  *
  */
+template<class T>
 class CMusicData {
 public:
     CMusicData(const int bsize) : _bsize(bsize) {
-        buff = new uint32_t[_bsize*2];
+        buff = new T[_bsize*2];
     }
 
     virtual ~CMusicData(){
@@ -40,7 +41,7 @@ public:
     }
 
     const void clear(const int index) {
-        std::memset(&buff[index*get_size()], 0x00, get_size()*sizeof(uint32_t));
+        std::memset(&buff[index*get_size()], 0x00, get_size()*sizeof(T));
     }
 
     const int get_idx() const {
@@ -48,9 +49,12 @@ public:
     }
 
     std::atomic<int> idx;
-    uint32_t* buff = nullptr;
+    T* buff = nullptr;
     int _bsize;
 };
+
+using CrossData = CMusicData<double>;
+using CrossDataPtr = std::shared_ptr<CrossData>;
 
 }
 

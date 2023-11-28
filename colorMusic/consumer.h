@@ -34,7 +34,7 @@ public:
      */
     Consumer(const int items_count, const bool extend_data) : _items_count(items_count), _extend_data(extend_data) {
         if(_items_count > 0 && _items_count <1000)
-            _data = std::unique_ptr<uint32_t []>(new uint32_t[items_count]);
+            _data = OutData(new uint32_t[items_count]);
     }
 
     /**
@@ -67,7 +67,7 @@ public:
      * @param data
      * @param d_size
      */
-    virtual bool process(const uint32_t* data, const int d_size){
+    virtual bool process(const OutData& data, const int d_size){
 
         if(is_busy()) //consumer process the privious data
             return false;
@@ -149,7 +149,7 @@ private:
      * @return true - input data were tranformed successfully
      * @return false - could not transform input data to consumer view
      */
-    virtual bool transformate_data(const uint32_t* data, const int d_size){
+    virtual bool transformate_data(const OutData& data, const int d_size){
         //the simplest scenario - inpur and cunsumer data have the same size and no data extension
         if(d_size ==_items_count){
             for(int i=0; i<_items_count; i++)
@@ -211,7 +211,7 @@ private:
     bool _extend_data = false;
 
 protected:
-    std::unique_ptr<uint32_t []> _data;
+    OutData _data;
 
 };
 

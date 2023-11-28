@@ -30,7 +30,7 @@ public:
      * @param filename
      */
     ColorMusic(const std::string& filename){
-        _data = std::make_shared<CMusicData>(Receiver::freq_interval());
+        _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
     }
@@ -65,7 +65,7 @@ public:
 
 private:
 
-    std::shared_ptr<CMusicData> _data;
+    CrossDataPtr _data;
     std::shared_ptr<Receiver> _recv;
     std::shared_ptr<Sender> _sendr;
 };

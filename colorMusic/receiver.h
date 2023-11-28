@@ -22,12 +22,13 @@
 #include <time.h>
 #include <chrono>
 #include <ctime>
-
-#include<fftw3.h>
+#include <thread>
 
 #include "Threaded.h"
 #include "cmusicdata.h"
 #include "colors.h"
+#include "fft_processor.h"
+
 namespace cmusic {
 
 /*
@@ -36,7 +37,7 @@ arecord --file-type raw --channels=1 --rate=40000 --format=FLOAT_LE -D pulse  --
 
 class Receiver : public piutils::Threaded {
 public:
-    Receiver(const std::shared_ptr<CMusicData>& data, const std::string& filename = "") : _filename(filename), _data(data) {
+    Receiver(const CrossDataPtr& data, const std::string& filename = "") : _filename(filename), _data(data) {
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source: " + filename);
         _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY|O_SYNC));
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Sourec FD: " + std::to_string(_fd));
@@ -94,27 +95,15 @@ public:
 
         fload buff;
         int rcv_index = 0;
-
-        /*
-        FFT data (In, Out, Plan)
-        */
-        double* in = (double*) fftw_malloc(sizeof(double) * p->chunk_size());
-        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * p->chunk_size());
-        fftw_plan my_plan;
-
-        std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
         bool success = true;
-
-        //chunks per measurement interval
-        const int i_chunks = p->freq_precision()/p->freq_chunk();
-        logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Chunks per interval: " + std::to_string(i_chunks));
+        std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
 
         while(!p->is_stop_signal()){
             int rcv_offset = rcv_index*p->_data->get_size();
             p->_data->clear(rcv_index);
 
             tp_start = std::chrono::system_clock::now();
-            for(int i=0; i<p->chunk_size(); i++){
+            for(int i=0; i < FftProc::chunk_size(); i++){
                 size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff.fl));
                 if(read_bytes==0){ //EOF
                     logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Unexpected EOF");
@@ -130,71 +119,31 @@ public:
                     logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " File read less than should: " + std::to_string(read_bytes));
                 }
 
-                in[i] = buff.fl;
+                p->_data->buff[rcv_offset + i] = buff.fl;
             }
             tp_end = std::chrono::system_clock::now();
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Loaded for (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count()));
+            auto e_time = std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count();
 
             if(!success){
                 break;
             }
 
-            my_plan = fftw_plan_dft_r2c_1d(p->chunk_size(), in, out, FFTW_ESTIMATE);
-            fftw_execute(my_plan);
-
-            double res = 0.0;
-            int j, idx;
-            int not_empty_counter = 0;
-
-            p->set_power_correction(0.0);
-            for(j=0; j<p->chunk_size()/2; j++){
-
-                /*
-                1. Ignore empty value
-                2. Ignore negative values (?)
-                */
-                if(out[j][0]!=0 || out[j][1]!=0){
-                    const double val = 10*log10(out[j][0]*out[j][0]+out[j][1]*out[j][1]);
-                    if(val>res)
-                        res = val;
-
-                    if(j==0 && val>0){
-                        //printf("First value [%4.2f][%4.2f]\n", out[j][0], out[j][1]);
-                        p->set_power_correction(val);
-                    }
-                }
-
-                if(j>0 && (j%i_chunks)==0){
-                    const int i_idx = j/i_chunks;
-                    //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
-                    if(res>0){
-                        p->_data->buff[rcv_offset + i_idx-1] = (uint32_t)round(res);
-                        not_empty_counter++;
-                    }
-
-                    res = 0.0;
-                }
-            }
-
-            const int i_idx = j/i_chunks;
-            //printf("%d, Freq: [%d-%d], \tVal: %4.2f, %d\n", j, (j-i_chunks)*p->freq_chunk(), j*p->freq_chunk(), res, i_idx);
-            if(res>0){
-                p->_data->buff[rcv_offset + i_idx-1] = (uint32_t)round(res);
-                not_empty_counter++;
-            }
-
             //update atomic value - start send thread
             p->_data->idx = rcv_index;
-            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tp_end).count()) +
-                " Values detected: " + std::to_string(not_empty_counter) + " Index: " + std::to_string(rcv_index));
+
+            logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(e_time) + " Index: " + std::to_string(rcv_index));
 
             rcv_index = (rcv_index==1? 0 : 1);
 
-            fftw_destroy_plan(my_plan);
-        }
+            /*
+                Now let's emulate delay if data loaded from the file
+            */
+           if(!p->if_stdin() && e_time < FftProc::chunk_interval()){
+                logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Emulated delay for (ms): " + std::to_string(FftProc::chunk_interval()-e_time));
+                std::this_thread::sleep_for (std::chrono::milliseconds(FftProc::chunk_interval()-e_time));
+           }
 
-        fftw_free(in);
-        fftw_free(out);
+        }
 
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Finished");
     }
@@ -256,124 +205,8 @@ public:
         return _filename.empty();
     }
 
-    std::shared_ptr<CMusicData> _data;
+    CrossDataPtr _data;
 
-    /**
-     * @brief Return base frequesncy
-     *
-     * @return const int
-     */
-    const int freqency() const {
-        return _freq;
-    }
-
-    /**
-     * @brief Return number of samples for one chunk.
-     *
-     * @return const int
-     */
-    const int chunk_size() const {
-        return _n;
-    }
-
-    /**
-     * @brief Return volume level modifier
-     *
-     * @return const double
-     */
-    const double power_correction() const {
-        return _power_level;
-    }
-
-    void set_power_correction(const double amp_level){
-        _power_level = amp_level;
-    }
-
-    /**
-     * @brief Frequence processing pprecision (100Hz)
-     *
-     * @return const int
-     */
-    static const int freq_precision(){
-        return _freqence_precision;
-    }
-
-    /**
-     * @brief Frequence interval (5 samples for 100Hz)
-     *
-     * @return const int
-     */
-    static const int freq_interval() {
-        return _freq_interval;
-    }
-
-    const int freq_chunk() const {
-        return _freq/_n;
-    }
-
-private:
-    static const int _freq = 40000;     //Base frequency. Constant (samples/sec) - 40000
-    //
-    // We will try to process by 50ms chunk
-    // 50ms = 1/20 sec; 40000 sm/sec * 0.05 = 2000
-    static const int _n = 2000;         //Number samples for one time processing - 2000
-
-    /*
-    The array you are showing is the Fourier Transform coefficients of the audio signal.
-    These coefficients can be used to get the frequency content of the audio.
-    The FFT is defined for complex valued input functions, so the coefficients you get out will be imaginary numbers
-    even though your input is all real values. In order to get the amount of power in each frequency,
-    you need to calculate the magnitude of the FFT coefficient for each frequency.
-    This is not just the real component of the coefficient, you need to calculate the square root of
-    the sum of the square of its real and imaginary components.
-    That is, if your coefficient is a + b*j, then its magnitude is sqrt(a^2 + b^2).
-
-    Once you have calculated the magnitude of each FFT coefficient,
-    you need to figure out which audio frequency each FFT coefficient belongs to.
-    An N point FFT will give you the frequency content of your signal at N equally spaced frequencies, starting at 0.
-    Because your sampling frequency is 44100 samples / sec. and the number of points in your FFT is 256,
-    your frequency spacing is 44100 / 256 = 172 Hz (approximately)
-
-
-    My case: 40000 samples/sec, the number of points in FFT is 2000
-    40000/2000 = 20 Hz
-
-    The first coefficient in your array will be the 0 frequency coefficient. That is basically the average power level
-    for all frequencies. The rest of your coefficients will count up from 0 in multiples of 172 Hz until you get to 128.
-    In an FFT, you only can measure frequencies up to half your sample points. Read these links on the Nyquist Frequency and
-    Nyquist-Shannon Sampling Theorem if you are a glutton for punishment and need to know why,
-    but the basic result is that your lower frequencies are going to be replicated or aliased in the higher frequency buckets.
-    So the frequencies will start from 0, increase by 172 Hz for each coefficient up to the N/2 coefficient,
-    then decrease by 172 Hz until the N - 1 coefficient.
-
-    My case: It means that we will be able to measure frequence in interval between 20*1000=20000 (0 - 20KHz)
-
-
-    Note: That is basically the average power level for all frequencies. (!)
-    */
-
-   // (freq/n)*(n/2) = freq/2
-   // My case: It means that we will be able to measure frequence in interval between 20*1000=20000 (0 - 20KHz)
-   static const int _max_frequency = _freq/2;
-
-    //minimum frequency interval we would like to recognize
-    static const int _freqence_precision = 100; //100Hz
-
-    //number of intervals
-    static const int _freq_interval = _max_frequency/_freqence_precision;
-
-private:
-    double _power_level = 0.0;    //Amplitude change used for alignment values
-
-    /*
-    Frequesnce interval is th value we racognize as single value.
-    Example: we have 1000 (N/2) measurements for 20KHz (each for 20Hz interval) i.e. 20Hz per sample
-    id we would like to recognize frequency with prrecisely 100Hz we should analyze 5 samples as one
-    (200 visualization intervals)
-
-    Otherwise if we have 50 intervals for visualization interval will be 20000Hz/50 = 400Hz per interval
-    i.e. we will recognize 20 measurements as one (400Hz/20Hz=20 samples)
-    */
 private:
     int _fd;
     std::string _filename;
