@@ -99,9 +99,8 @@ public:
         std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
 
         while(!p->is_stop_signal()){
-            int rcv_offset = rcv_index*p->_data->get_size();
             p->_data->clear(rcv_index);
-
+            auto rdata = p->_data->get(rcv_index);
             tp_start = std::chrono::system_clock::now();
             for(int i=0; i < FftProc::chunk_size(); i++){
                 size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff.fl));
@@ -119,7 +118,7 @@ public:
                     logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " File read less than should: " + std::to_string(read_bytes));
                 }
 
-                p->_data->buff[rcv_offset + i] = buff.fl;
+                rdata[i] = buff.fl;
             }
             tp_end = std::chrono::system_clock::now();
             auto e_time = std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count();

@@ -27,10 +27,10 @@ namespace cmusic {
 class Sender : public piutils::Threaded {
 public:
     Sender(const CrossDataPtr& data, const int sleds=300) : _data(data){
-        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data size: " + std::to_string(FftProc::freq_interval()));
 
-        _data_out = OutData(new uint32_t[FftProc::freq_interval()]);
-        _data_out_len = FftProc::freq_interval();
+        data_out = OutData(new uint32_t[FftProc::freq_interval()]);
+        data_out_len = FftProc::freq_interval();
     }
 
     virtual ~Sender() {
@@ -61,7 +61,6 @@ public:
 
         int i_idx = 0;      //Index for received values
         const int data_count = 0; //Number of received values
-        int data_idx = 0;
         int load_loops = 0; //The number of loops necessary for destination array filling
 
         std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
@@ -84,13 +83,10 @@ public:
                 break;
             }
 
-            data_idx = (i_idx==0 ? 0 : psend->get_size());
-            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data " + std::to_string(i_idx) + " Data idx: " + std::to_string(data_idx));
+            auto rawdata = psend->_data->get(i_idx);
+            fft_proc->process(rawdata, psend->get_size(), psend->data_out, psend->d_size());
 
-
-            fft_proc->process(&psend->_data->buff[data_idx] , psend->get_size(), psend->_data_out, psend->d_size());
-
-            chtml->process(psend->_data_out , psend->get_size());
+            chtml->process(psend->data_out , psend->d_size());
         }
 
         chtml->stop();
@@ -100,12 +96,12 @@ public:
 public:
 
     const int d_size() const {
-        return _data_out_len;
+        return data_out_len;
     }
 
     CrossDataPtr _data;  //raw data received from received
-    OutData _data_out;     //data prepeared for output
-    int _data_out_len;
+    OutData data_out;     //data prepeared for output
+    int data_out_len;
 };
 
 }

@@ -62,7 +62,12 @@ public:
      * @return true
      * @return false
      */
-    bool process(const double* data_in, const int d_size_in, OutData& data_out, const int d_size_out){
+    bool process(const CrossData::RawData& data_in, const int d_size_in, OutData& data_out, const int d_size_out){
+
+        double res = 0.0;
+        int j, idx;
+        int not_empty_counter = 0;
+
         if(chunk_size()<d_size_in){
             logger::log(logger::LLOG::ERROR, "fftp", std::string(__func__) + " Too much input data: " + std::to_string(d_size_in));
             return false;
@@ -71,16 +76,12 @@ public:
         tp_start = std::chrono::system_clock::now();
 
         for(int i=0; i<d_size_in; i++){
-            buff_in[0] = data_in[i];
+            buff_in[i] = data_in[i];
+
         }
 
         my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in, buff_out, FFTW_ESTIMATE);
         fftw_execute(my_plan);
-
-        double res = 0.0;
-        int j, idx;
-        int not_empty_counter = 0;
-
         set_power_correction(0.0);
         for(j=0; j<chunk_size()/2; j++){
 

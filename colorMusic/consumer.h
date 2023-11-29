@@ -33,8 +33,8 @@ public:
      * @param extend_data
      */
     Consumer(const int items_count, const bool extend_data) : _items_count(items_count), _extend_data(extend_data) {
-        if(_items_count > 0 && _items_count <1000)
-            _data = OutData(new uint32_t[items_count]);
+        if(items_count > 0 && items_count <1000)
+            _data = OutData(new uint32_t[_items_count]);
     }
 
     /**
@@ -150,20 +150,24 @@ private:
      * @return false - could not transform input data to consumer view
      */
     virtual bool transformate_data(const OutData& data, const int d_size){
+        //std::cout << "Input size: " << d_size << " Internal size: " << items_count() << std::endl;
+
         //the simplest scenario - inpur and cunsumer data have the same size and no data extension
-        if(d_size ==_items_count){
-            for(int i=0; i<_items_count; i++)
+        if(d_size ==items_count()){
+            for(int i=0; i<items_count(); i++){
                 _data[i] = data[i];
+            }
+
             return true;
         }
 
         //
-        if(d_size > _items_count){
-            const uint32_t idx = d_size/_items_count;   //group values by
+        if(d_size > items_count()){
+            const uint32_t idx = d_size/items_count();   //group values by
             int j = 0;
             uint32_t val = 0;
 
-            while(j < (_items_count-1)){
+            while(j < (items_count()-1)){
                 val = 0;
                 for(int kg_idx = j*idx; kg_idx<((j+1)*idx); kg_idx++){
                     if(data[kg_idx]>val)
@@ -205,12 +209,11 @@ private:
         return true;
     }
 
-    int _items_count;      //number of output items supported by this consumer
-
     bool _busy = false;
     bool _extend_data = false;
 
 protected:
+    int _items_count;      //number of output items supported by this consumer
     OutData _data;
 
 };

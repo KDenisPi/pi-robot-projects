@@ -24,16 +24,14 @@ namespace cmusic {
 template<class T>
 class CMusicData {
 public:
+    using RawData = std::shared_ptr<T[]>;
+
     CMusicData(const int bsize) : _bsize(bsize) {
-        buff = new T[_bsize*2];
+        buff[0] = RawData(new T[_bsize]);
+        buff[1] = RawData(new T[_bsize]);
     }
 
     virtual ~CMusicData(){
-        delete[] buff;
-    }
-
-    const int offset() const{
-        return _bsize*idx;
     }
 
     const int get_size() const {
@@ -41,15 +39,24 @@ public:
     }
 
     const void clear(const int index) {
-        std::memset(&buff[index*get_size()], 0x00, get_size()*sizeof(T));
+        for(int i=0; i<get_size(); i++)
+            buff[index][i] = 0;
     }
 
-    const int get_idx() const {
-        return idx;
+    /**
+     * @brief
+     *
+     * @param idx
+     * @return const std::shared_ptr<T[]>
+     */
+    const RawData get(const int index){
+        return buff[index];
     }
 
     std::atomic<int> idx;
-    T* buff = nullptr;
+
+private:
+    RawData buff[2];
     int _bsize;
 };
 
