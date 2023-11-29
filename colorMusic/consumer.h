@@ -117,6 +117,11 @@ public:
         return _busy;
     }
 
+    /**
+     * @brief Set the busy object
+     *
+     * @param busy
+     */
     void set_busy(const bool busy = true) {
         _busy = busy;
     }

@@ -128,7 +128,8 @@ private:
      *
     */
     void open(const int part = 0){
-        const std::string fname = _root_dir + "colormusic_" + std::to_string(part) + ".html";
+
+        const std::string fname = _root_dir + "colormusic_" + std::to_string(items_count()) + "_" + std::to_string(part) + ".html";
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__) + " filename: " + fname);
 
         if(is_ready()){
@@ -167,7 +168,14 @@ private:
         logger::log(logger::LLOG::INFO, "~CmrHtml", std::string(__func__));
 
         close();
-        open(++_part);
+
+        ++_part;
+        if(_part >= max_file_index){
+            _part = 0;
+        }
+
+        open(_part);
+
         _line_count = 0;
     }
 
@@ -177,6 +185,8 @@ private:
 
     int _line_count = 0;
     int _part = 0;
+
+    const int max_file_index = 10;  //re-write files if we have more than this
 
     const char* _header = "<!DOCTYPE html>\n<html>\n<head><title>Sound HTML presentation</title></head>\n<body>";
     const char* _table_b = "<table>\n";
