@@ -33,15 +33,19 @@ public:
      * @param extend_data
      */
     Consumer(const int items_count, const bool extend_data) : _items_count(items_count), _extend_data(extend_data) {
-        if(items_count > 0 && items_count <1000)
-            _data = OutData(new uint32_t[_items_count]);
+        logger::log(logger::LLOG::INFO, "consm", std::string(__func__) + " Items count: " + std::to_string(items_count) + " Extend: " + std::to_string(extend_data));
+
+        assert(items_count > 0 && items_count <1000);
+        _data = OutData(new uint32_t[_items_count]);
     }
 
     /**
      * @brief Destroy the Consumer object
      *
      */
-    virtual ~Consumer() {}
+    virtual ~Consumer() {
+        logger::log(logger::LLOG::INFO, "consm", std::string(__func__));
+    }
 
     /**
      * @brief
@@ -69,7 +73,7 @@ public:
      */
     virtual bool process(const OutData& data, const int d_size){
 
-        if(is_busy()) //consumer process the privious data
+        if(is_has_job()) //consumer process the privious data
             return false;
 
         bool ready = is_ready();
@@ -113,12 +117,12 @@ public:
      * @return true
      * @return false
      */
-    const bool is_busy() const {
+    const bool is_has_job() const {
         return _busy;
     }
 
     /**
-     * @brief Set the busy object
+     * @brief Mark consumer as busy
      *
      * @param busy
      */
@@ -143,6 +147,8 @@ public:
     virtual const bool is_ready(){
         return true;
     }
+
+    virtual const int process_data() = 0;
 
 private:
     /**
@@ -207,11 +213,21 @@ private:
             if(items_count() == ldata::pal_size_32)
                 color = i;
             else
-                color = ((i/6) < ldata::pal_size_32 ? i/6 : ldata::pal_size_32-1);
+                color = ((i/color_ratio()) < ldata::pal_size_32 ? i/color_ratio() : ldata::pal_size_32-1);
 
             _data[i] = (_data[i]==0 ? ldata::color_black : ldata::colors32[color]);
         }
         return true;
+    }
+
+    /**
+     * @brief Color scale ratio.
+     * It is 200/32=6 for now (200 number of intervalls, 32 palette size)
+     *
+     * @return const int
+     */
+    const int color_ratio() const {
+        return FftProc::freq_interval()/ldata::pal_size_32;
     }
 
     bool _busy = false;

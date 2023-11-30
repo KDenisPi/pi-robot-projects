@@ -65,12 +65,14 @@ public:
     }
 
     /**
+     * @brief
      *
-    */
+     * @param p
+     */
     static void worker(CmrHtml* p){
         logger::log(logger::LLOG::INFO, "html", std::string(__func__) + " Started");
 
-        auto fn = [p]{return (p->is_stop_signal() || p->is_busy());};
+        auto fn = [p]{return (p->is_stop_signal() || p->is_has_job());};
         for(;;){
             {
                 std::unique_lock<std::mutex> lk(p->cv_m);
@@ -99,7 +101,7 @@ public:
      *
      * @return const int
      */
-    const int process_data(){
+    virtual const int process_data() override{
         int not_empty_counter = 0;
         //start line
         _fd << "<tr>" << std::endl;

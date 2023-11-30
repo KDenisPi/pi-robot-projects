@@ -20,7 +20,9 @@
 #include "Threaded.h"
 #include "cmusicdata.h"
 #include "fft_processor.h"
+
 #include "consumer_html.h"
+#include "consumer_ws2801.h"
 
 namespace cmusic {
 
@@ -65,7 +67,10 @@ public:
 
         std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
         std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
+        std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(32);
+
         chtml->start();
+        cmrWs2801->start();
 
         auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
         for(;;){
@@ -90,6 +95,8 @@ public:
         }
 
         chtml->stop();
+        cmrWs2801->stop();
+
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");
     }
 
