@@ -92,6 +92,7 @@ public:
             fft_proc->process(rawdata, psend->get_size(), psend->data_out, psend->d_size());
 
             chtml->process(psend->data_out , psend->d_size());
+            cmrWs2801->process(psend->data_out , psend->d_size());
         }
 
         chtml->stop();

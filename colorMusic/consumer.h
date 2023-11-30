@@ -148,7 +148,7 @@ public:
         return true;
     }
 
-    virtual const int process_data() = 0;
+    virtual void process_data() = 0;
 
 private:
     /**

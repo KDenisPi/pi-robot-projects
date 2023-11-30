@@ -118,12 +118,10 @@ public:
             }
 
             auto tp_start = p->processing_start();
-
-            int not_empty_counter = p->process_data();
-
-            logger::log(logger::LLOG::DEBUG, "ws2801", std::string(__func__) + " Processed for (ms): " + p->processing_end(tp_start) + " Values: " + std::to_string(not_empty_counter));
-
+            p->process_data();
             p->set_busy(false);
+
+            logger::log(logger::LLOG::DEBUG, "ws2801", std::string(__func__) + " Processed for (ms): " + p->processing_end(tp_start));
         }
 
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " Finished");
@@ -134,14 +132,13 @@ public:
      *
      * @return const int
      */
-    virtual const int process_data() override{
+    virtual void process_data() override{
         logger::log(logger::LLOG::DEBUG, "ws2801", std::string(__func__) + " Started" );
-
-        SPI_On();
 
         //init output data
         clear_data();
 
+        SPI_On();
         for( std::size_t lidx = 0; lidx < items_count(); lidx++ ){
 
             const int idx = lidx*3;

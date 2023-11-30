@@ -85,12 +85,11 @@ public:
             }
 
             auto tp_start = p->processing_start();
-
-            int not_empty_counter = p->process_data();
-
-            logger::log(logger::LLOG::DEBUG, "html", std::string(__func__) + " Processed for (ms): " + p->processing_end(tp_start) + " Values: " + std::to_string(not_empty_counter));
-
+            p->process_data();
             p->set_busy(false);
+
+            logger::log(logger::LLOG::DEBUG, "html", std::string(__func__) + " Processed for (ms): " + p->processing_end(tp_start));
+
         }
 
         logger::log(logger::LLOG::INFO, "html", std::string(__func__) + " Finished");
@@ -101,8 +100,7 @@ public:
      *
      * @return const int
      */
-    virtual const int process_data() override{
-        int not_empty_counter = 0;
+    virtual void process_data() override{
         //start line
         _fd << "<tr>" << std::endl;
         _fd << "<td>" << std::to_string(_line_count) << "</td>" << std::endl;
@@ -110,8 +108,6 @@ public:
         int color;
         for(int i=0; i<items_count(); i++){
             _fd << "<td style=\"background-color:#" << std::hex << _data[i] << ";\">" << std::to_string(color) <<"</td>" ;
-            if(_data[i] != ldata::color_black)
-                not_empty_counter++;
         }
         _fd << "</tr>"<< std::endl;
 
@@ -120,8 +116,6 @@ public:
         if(_line_count>=_max_lines_per_file){
             reopen();
         }
-
-        return not_empty_counter;
     }
 
 private:
