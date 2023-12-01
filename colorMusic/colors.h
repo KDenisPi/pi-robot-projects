@@ -77,7 +77,7 @@ const uint32_t colors32[32] = {
 
 const uint32_t pal_size_32 = 32;
 
-const uint32_t color_black = 0xf8f8f8;
+const uint32_t color_black = 0x101010;
 
 }
 
