@@ -101,18 +101,26 @@ public:
 
             if(j>0 && (j%chunks_to_mitv)==0){
                 const int i_idx = j/chunks_to_mitv;
-                if(res>0 && i_idx <= d_size_out){
-                    data_out[i_idx-1] = (uint32_t)round(res);
-                    not_empty_counter++;
+                if(i_idx <= d_size_out){
+                    if(res>0){
+                        data_out[i_idx-1] = (uint32_t)round(res);
+                        not_empty_counter++;
+                    }
+                    else
+                        data_out[i_idx-1] = 0;
                 }
                 res = 0.0;
             }
         }
 
         const int i_idx = j/chunks_to_mitv;
-        if(res>0 && i_idx <= d_size_out){
-            data_out[i_idx-1] = (uint32_t)round(res);
-            not_empty_counter++;
+        if(i_idx <= d_size_out){
+            if(res>0){
+                data_out[i_idx-1] = (uint32_t)round(res);
+                not_empty_counter++;
+            }
+            else
+                data_out[i_idx-1] = 0;
         }
 
         fftw_destroy_plan(my_plan);
