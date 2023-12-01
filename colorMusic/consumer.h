@@ -53,6 +53,7 @@ public:
      */
     void stop(){
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__));
+
         piutils::Threaded::stop();
     }
 

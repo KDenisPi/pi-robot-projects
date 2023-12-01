@@ -27,7 +27,7 @@ using pspi_cfg = pirobot::spi::SPI_config;
 using provider = std::shared_ptr<pirobot::gpio::GpioProviderSimple>;
 using gpio = std::shared_ptr<pirobot::gpio::Gpio>;
 
-using LedData = std::unique_ptr<uint8_t>;
+using LedData = std::unique_ptr<std::vector<uint8_t>>;
 
 
 /**
@@ -57,9 +57,7 @@ public:
 
         p_pspi = std::make_shared<pirobot::spi::SPI>(std::string("PI_SPI"), cfg, p_gpio_ce0, p_gpio_ce1);
 
-
-        led_data_size = leds_count*3;
-        ledData = LedData(new uint8_t(led_data_size));
+        ledData = LedData(new std::vector<uint8_t>(leds_count*3, 0x00));
     }
 
     /**
@@ -118,6 +116,7 @@ public:
             }
 
             auto tp_start = p->processing_start();
+
             p->process_data();
             p->set_busy(false);
 
@@ -139,15 +138,15 @@ public:
         clear_data();
 
         SPI_On();
-        for( std::size_t lidx = 0; lidx < items_count(); lidx++ ){
 
+        for( std::size_t lidx = 0; lidx < items_count(); lidx++ ){
             const int idx = lidx*3;
-            ledData.get()[idx + 0] = (_data[lidx] & 0xFF);
-            ledData.get()[idx + 1] = ((_data[lidx] >> 8 ) & 0xFF);
-            ledData.get()[idx + 2] = ((_data[lidx] >> 16 ) & 0xFF);
+            ledData->at(idx)     = (_data[lidx] & 0xFF);
+            ledData->at(idx + 1) = ((_data[lidx] >> 8 ) & 0xFF);
+            ledData->at(idx + 2) = ((_data[lidx] >> 16 ) & 0xFF);
         }
 
-        if(!p_pspi->data_rw(ledData.get(), led_data_size)){
+        if(!p_pspi->data_rw(ledData->data(), ledData->size())){
             logger::log(logger::LLOG::ERROR, "ws2801", std::string(__func__) + " Could not write data");
         }
 
@@ -158,7 +157,8 @@ public:
 private:
 
     void clear_data(){
-        std::memset( (void*)ledData.get(), 0, led_data_size);
+          for(int i=0;  i<ledData->size(); i++)
+            ledData->at(i) = 0x00;
     }
 
     provider g_prov;

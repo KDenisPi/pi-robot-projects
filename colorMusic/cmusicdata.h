@@ -27,11 +27,13 @@ public:
     using RawData = std::shared_ptr<T[]>;
 
     CMusicData(const int bsize) : _bsize(bsize) {
+        logger::log(logger::LLOG::INFO, "cmdata", std::string(__func__));
         buff[0] = RawData(new T[_bsize]);
         buff[1] = RawData(new T[_bsize]);
     }
 
     virtual ~CMusicData(){
+        logger::log(logger::LLOG::INFO, "cmdata", std::string(__func__));
     }
 
     const int get_size() const {

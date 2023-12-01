@@ -91,7 +91,7 @@ public:
             auto rawdata = psend->_data->get(i_idx);
             fft_proc->process(rawdata, psend->get_size(), psend->data_out, psend->d_size());
 
-            chtml->process(psend->data_out , psend->d_size());
+            //chtml->process(psend->data_out , psend->d_size());
             cmrWs2801->process(psend->data_out , psend->d_size());
         }
 

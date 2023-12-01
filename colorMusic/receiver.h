@@ -46,6 +46,7 @@ public:
 
     virtual ~Receiver(){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
+
         if(_fd>=0){
             close(_fd);
             _fd = -1;

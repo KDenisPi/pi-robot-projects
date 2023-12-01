@@ -30,18 +30,24 @@ public:
      * @param filename
      */
     ColorMusic(const std::string& filename){
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
+
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
     }
 
     virtual ~ColorMusic(){
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
+
         stop();
     }
 
     void stop(){
-        _sendr->stop();
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
+
         _recv->stop();
+        _sendr->stop();
     }
 
     /**
@@ -51,6 +57,8 @@ public:
      * @return false
      */
     bool start(){
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
+
         _sendr->start();
         return _recv->start();
     }
@@ -64,7 +72,6 @@ public:
     }
 
 private:
-
     CrossDataPtr _data;
     std::shared_ptr<Receiver> _recv;
     std::shared_ptr<Sender> _sendr;
