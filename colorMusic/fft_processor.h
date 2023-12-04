@@ -67,6 +67,7 @@ public:
         double res = 0.0;
         int j, idx;
         int not_empty_counter = 0;
+        double val_min = 0.0, val_max = 0.0;
 
         if(chunk_size()<d_size_in){
             logger::log(logger::LLOG::ERROR, "fftp", std::string(__func__) + " Too much input data: " + std::to_string(d_size_in));
@@ -77,7 +78,6 @@ public:
 
         for(int i=0; i<d_size_in; i++){
             buff_in[i] = data_in[i];
-
         }
 
         my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in, buff_out, FFTW_ESTIMATE);
@@ -91,12 +91,18 @@ public:
             */
             if(buff_out[j][0]!=0 || buff_out[j][1]!=0){
                 const double val = 10*log10(buff_out[j][0]*buff_out[j][0]+buff_out[j][1]*buff_out[j][1]);
-                if(val>res)
-                    res = val;
+
+                if(val < val_min)
+                    val_min = val;
+                if(val > val_max)
+                    val_max = val;
 
                 if(j==0 && val>0){
                     set_power_correction(val);
                 }
+
+                if(val+power_correction() > res)
+                    res = val + power_correction();
             }
 
             if(j>0 && (j%chunks_to_mitv)==0){
@@ -112,6 +118,8 @@ public:
                 res = 0.0;
             }
         }
+
+        //std::cout << " Power correction:  " << power_correction() << "\t Min: " << val_min << "\t Max: " << val_max << std::endl;
 
         const int i_idx = j/chunks_to_mitv;
         if(i_idx <= d_size_out){
