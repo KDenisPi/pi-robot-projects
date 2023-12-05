@@ -23,6 +23,8 @@ namespace cmusic {
 #include "logger.h"
 
 using OutData = std::unique_ptr<uint32_t[]>;
+using FftDouble = std::unique_ptr<double, std::function<void(double*)>>;
+using FftComplex = std::unique_ptr<fftw_complex, std::function<void(fftw_complex*)>>;
 
 class FftProc {
 public:
@@ -31,8 +33,11 @@ public:
         /*
         FFT data (In, Out, Plan)
         */
-        buff_in = (double*) fftw_malloc(sizeof(double) * FftProc::chunk_size());
-        buff_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * chunk_size());
+        //buff_in = (double*) fftw_malloc(sizeof(double) * FftProc::chunk_size());
+        //buff_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FftProc::chunk_size());
+
+        buff_in = FftDouble((double*)fftw_malloc(sizeof(double) * FftProc::chunk_size()), [](double* ptr) { fftw_free(ptr); });
+        buff_out = FftComplex((fftw_complex*)fftw_malloc(sizeof(fftw_complex) * FftProc::chunk_size()), [](fftw_complex* ptr) { fftw_free(ptr); });
 
         logger::log(logger::LLOG::INFO, "fftp", std::string(__func__) + " Chunks per interval: " + std::to_string(chunks_to_mitv));
     }
@@ -40,8 +45,8 @@ public:
     virtual ~FftProc() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
 
-        fftw_free(buff_in);
-        fftw_free(buff_out);
+        //fftw_free(buff_in);
+        //fftw_free(buff_out);
     }
 
     /**
@@ -77,10 +82,12 @@ public:
         tp_start = std::chrono::system_clock::now();
 
         for(int i=0; i<d_size_in; i++){
-            buff_in[i] = data_in[i];
+            //buff_in[i] = data_in[i];
+            buff_in.get()[i] = data_in[i];
         }
 
-        my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in, buff_out, FFTW_ESTIMATE);
+        //my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in, buff_out, FFTW_ESTIMATE);
+        my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in.get(), buff_out.get(), FFTW_ESTIMATE);
         fftw_execute(my_plan);
         set_power_correction(0.0);
         for(j=0; j<chunk_size()/2; j++){
@@ -89,8 +96,11 @@ public:
             1. Ignore empty value
             2. Ignore negative values (?)
             */
-            if(buff_out[j][0]!=0 || buff_out[j][1]!=0){
-                const double val = 10*log10(buff_out[j][0]*buff_out[j][0]+buff_out[j][1]*buff_out[j][1]);
+            const fftw_complex* cpx = buff_out.get();
+            //if(buff_out[j][0]!=0 || buff_out[j][1]!=0){
+            if(cpx[j][0]!=0 || cpx[j][1]!=0){
+                //const double val = 10*log10(buff_out[j][0]*buff_out[j][0]+buff_out[j][1]*buff_out[j][1]);
+                const double val = 10*log10(cpx[j][0]*cpx[j][0]+cpx[j][1]*cpx[j][1]);
 
                 if(val < val_min)
                     val_min = val;
@@ -265,8 +275,12 @@ private:
     i.e. we will recognize 20 measurements as one (400Hz/20Hz=20 samples)
     */
 
-    double* buff_in;
-    fftw_complex* buff_out;
+    //double* buff_in;
+    //fftw_complex* buff_out;
+
+    FftDouble buff_in;
+    FftComplex buff_out;
+
     fftw_plan my_plan;
 
     //chunks per measurement interval
