@@ -26,12 +26,6 @@ int main (int argc, char* argv[])
     logger::log_init("/var/log/pi-robot/cmusic_log");
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " cmusic");
 
-/*
-    std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
-    chtml->process(nullptr, 0);
-    chtml.reset();
-*/
-
     std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(argc==1 ? std::string() : std::string(argv[1]));
 
     if(cmusic->start()){
