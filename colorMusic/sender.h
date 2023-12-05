@@ -70,7 +70,7 @@ public:
         std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(32);
 
         chtml->start();
-        //cmrWs2801->start();
+        cmrWs2801->start();
 
         auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
         for(;;){
