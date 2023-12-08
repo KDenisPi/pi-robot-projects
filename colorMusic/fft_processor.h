@@ -117,11 +117,11 @@ public:
                 const int i_idx = j/chunks_to_mitv;
                 if(i_idx <= d_size_out){
                     if(res>0){
-                        data_out[i_idx-1] = (uint32_t)round(res);
+                        data_out[i_idx-1] = MeasData((uint32_t)round(res), j*freq_per_coefficient());
                         not_empty_counter++;
                     }
                     else
-                        data_out[i_idx-1] = 0;
+                        data_out[i_idx-1] = MeasData(0, j*freq_per_coefficient());
                 }
                 res = 0.0;
             }
@@ -132,11 +132,11 @@ public:
         const int i_idx = j/chunks_to_mitv;
         if(i_idx <= d_size_out){
             if(res>0){
-                data_out[i_idx-1] = (uint32_t)round(res);
+                data_out[i_idx-1] =  MeasData((uint32_t)round(res), j*freq_per_coefficient());
                 not_empty_counter++;
             }
             else
-                data_out[i_idx-1] = 0;
+                data_out[i_idx-1] = MeasData(0, j*freq_per_coefficient());
         }
 
         fftw_destroy_plan(my_plan);
@@ -193,17 +193,12 @@ public:
      *
      * @return const int
      */
-    static const int freq_chunk(){
-        return _freq/_n;
-    }
-
-    /**
-     * @brief
-     *
-     * @return const int
-     */
     static const int chunk_interval() {
         return _chunk_interval;
+    }
+
+    static const int freq_per_coefficient() {
+        return _freq_per_coefficient;
     }
 
 private:
@@ -259,6 +254,9 @@ private:
     //number of intervals
     static const int _freq_interval = _max_frequency/_freqence_precision;
 
+    //which audio frequency each FFT coefficient belongs to (20 Hz)
+    static const int _freq_per_coefficient = _freq/_n;
+
 private:
     double _power_level = 0.0;    //Amplitude change used for alignment values        fftw_plan my_plan;
 
@@ -282,7 +280,7 @@ private:
     fftw_plan my_plan;
 
     //chunks per measurement interval
-    const int chunks_to_mitv = freq_precision()/freq_chunk();
+    const int chunks_to_mitv = freq_precision()/freq_per_coefficient();
     std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
 
 };

@@ -72,7 +72,7 @@ public:
      * @param data
      * @param d_size
      */
-    virtual bool process(const OutData& data, const int d_size){
+    virtual bool process(const OutData& data, const int d_size, const double pwr_avg){
 
         if(is_has_job()) //consumer process the privious data
             return false;
@@ -83,7 +83,7 @@ public:
 
         bool trans = transformate_data(data, d_size);
         if(trans){
-            bool fr2col = freq_to_color();
+            bool fr2col = freq_to_color((uint32_t) pwr_avg);
 
             set_busy(true);
             cv.notify_one();
@@ -178,8 +178,8 @@ public:
      */
     virtual const int get_color_by_power(const int power, const int average_level) const {
         const int quoter = average_level/2;
-        for(int i=0; i<3; i++){
-            if(power < quoter*i) return i;
+        for(int i=1; i<=3; i++){
+            if(power < quoter*i) return i-1;
         }
 
         return 3;
@@ -200,7 +200,7 @@ private:
         //std::cout << "Input size: " << d_size << " Internal size: " << items_count() << std::endl;
 
         //the simplest scenario - inpur and cunsumer data have the same size and no data extension
-        if(d_size ==items_count()){
+        if(d_size == items_count()){
             for(int i=0; i<items_count(); i++){
                 _data[i] = data[i];
             }
@@ -212,21 +212,21 @@ private:
         if(d_size > items_count()){
             const uint32_t idx = d_size/items_count();   //group values by
             int j = 0;
-            uint32_t val = 0;
+            MeasData val = {0,0};
 
             while(j < (items_count()-1)){
-                val = 0;
+                val = {0,0};
                 for(int kg_idx = j*idx; kg_idx<((j+1)*idx); kg_idx++){
-                    if(data[kg_idx]>val)
+                    if(data[kg_idx].first > val.first)
                         val = data[kg_idx];
                 }
                 _data[j] = val;
                 j++;
             }
 
-            val = 0;
+            val = {0,0};
             for(int kg_idx = j*idx; kg_idx<d_size; kg_idx++){
-                if(data[kg_idx]>val)
+                if(data[kg_idx].first > val.first)
                     val = data[kg_idx];
             }
             _data[j] = val;
@@ -243,15 +243,17 @@ private:
      * @return true
      * @return false
      */
-    virtual bool freq_to_color(){
+    virtual bool freq_to_color(const uint32_t pwr_avg){
         int color;
         for(int i=0; i<items_count(); i++){
-            if(items_count() == ldata::pal_size_32)
-                color = i;
-            else
-                color = ((i/color_ratio()) < ldata::pal_size_32 ? i/color_ratio() : ldata::pal_size_32-1);
-
-            _data[i] = (_data[i]==0 ? ldata::color_black : ldata::colors32[color]);
+            const auto freq_idx = get_interval_by_freq(_data[i].second);
+            const auto pwr_idx = get_color_by_power(_data[i].first, pwr_avg);
+            const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
+/*
+            std::cout << i << " Freq: " << std::dec << _data[i].second << " Idx: " << freq_idx << " Pwr: " << _data[i].first << " Idx: " << pwr_idx << " Avg: " << pwr_avg/2
+                << " color idx: " << color << " color: " << std::hex << ldata::colors_blocks[color] << std::endl;
+*/
+            _data[i].first = (_data[i].first == 0 ? ldata::color_black : ldata::colors_blocks[color]);
         }
         return true;
     }

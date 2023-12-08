@@ -90,6 +90,7 @@ Intervals
 const int col_intervals[6] = {1000, 6000, 9000, 12000, 15000, 20000};
 
 const uint32_t pal_size_block = 24;
+const uint32_t pal_colors_per_block = 4;
 
 //from light to dark
 const uint32_t colors_blocks[24] = {

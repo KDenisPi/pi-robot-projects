@@ -67,10 +67,10 @@ public:
 
         std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
         std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
-        std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(32);
+        //std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(32);
 
         chtml->start();
-        cmrWs2801->start();
+        //cmrWs2801->start();
 
         auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
         for(;;){
@@ -91,12 +91,12 @@ public:
             auto rawdata = psend->_data->get(i_idx);
             fft_proc->process(rawdata, psend->get_size(), psend->data_out, psend->d_size());
 
-            chtml->process(psend->data_out , psend->d_size());
-            cmrWs2801->process(psend->data_out , psend->d_size());
+            chtml->process(psend->data_out , psend->d_size(), fft_proc->power_correction());
+            //cmrWs2801->process(psend->data_out , psend->d_size(), fft_proc->power_correction());
         }
 
         chtml->stop();
-        cmrWs2801->stop();
+        //cmrWs2801->stop();
 
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");
     }
