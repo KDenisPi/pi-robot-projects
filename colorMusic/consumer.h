@@ -137,7 +137,7 @@ public:
      * @return true
      * @return false
      */
-    const bool extend_data() const{
+    const bool is_extend_data() const{
         return _extend_data;
     }
 
@@ -245,6 +245,8 @@ private:
      */
     virtual bool freq_to_color(const uint32_t pwr_avg){
         int color;
+        int j = 0; //for extend data
+
         for(int i=0; i<items_count(); i++){
             const auto freq_idx = get_interval_by_freq(_data[i].second);
             const auto pwr_idx = get_color_by_power(_data[i].first, pwr_avg);
@@ -253,8 +255,23 @@ private:
             std::cout << i << " Freq: " << std::dec << _data[i].second << " Idx: " << freq_idx << " Pwr: " << _data[i].first << " Idx: " << pwr_idx << " Avg: " << pwr_avg/2
                 << " color idx: " << color << " color: " << std::hex << ldata::colors_blocks[color] << std::endl;
 */
-            _data[i].first = (_data[i].first == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+            if(!is_extend_data()) //easy way
+                _data[i].first = (_data[i].first == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+            else {
+                if(_data[i].first > 0){
+                     _data[j++].first = ldata::colors_blocks[color];
+                }
+            }
         }
+
+        if(is_extend_data() && j>0 && j<items_count()){
+            int k=0;
+            for(int i=j; i<items_count(); i++){
+                _data[i].first = _data[k++].first;
+                if(k>=j) k=0;
+            }
+        }
+
         return true;
     }
 

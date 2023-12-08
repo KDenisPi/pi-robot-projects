@@ -66,7 +66,7 @@ public:
         int load_loops = 0; //The number of loops necessary for destination array filling
 
         std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
-        std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>();
+        std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>(true);
         //std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(32);
 
         chtml->start();

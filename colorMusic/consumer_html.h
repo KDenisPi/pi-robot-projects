@@ -30,7 +30,7 @@ public:
      * @param ln_pfile
      * @param rdir
      */
-    CmrHtml(const int ln_pfile = 200, const std::string rdir = "./") : Consumer(200, false), _max_lines_per_file(ln_pfile), _root_dir(rdir){
+    CmrHtml(const bool extend_data = false, const int ln_pfile = 200, const std::string rdir = "./") : Consumer(32, extend_data), _max_lines_per_file(ln_pfile), _root_dir(rdir){
 
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__));
         open(0);
