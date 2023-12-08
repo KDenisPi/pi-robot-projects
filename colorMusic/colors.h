@@ -13,6 +13,8 @@
 
 #include <cstdint>
 
+namespace cmusic {
+
  namespace ldata {
 
  const uint32_t colors150[150] = {
@@ -68,6 +70,7 @@
     0xD01040,0xD21143,0xD41246
 };
 
+const uint32_t pal_size_32 = 32;
 const uint32_t colors32[32] = {
     0x1001FF, 0x1030FF, 0x1060FF, 0x1080FF, 0x1096FF, 0x10A6FF, 0x10B6FF, 0x10C6FF, //blue
     0x10FF01, 0x10FF30, 0x10FF60, 0x10FF80, 0x10FF96, 0x10FFA6, 0x10FFB6, 0x10FFC6, //green
@@ -75,10 +78,34 @@ const uint32_t colors32[32] = {
     0xFF0101, 0xFF3001, 0xFF6001, 0xFF6080, 0xFF6090, 0xFF60A0, 0xFF60B0, 0xFF60C0  //red
 };
 
-const uint32_t pal_size_32 = 32;
+/*
+Intervals
+1 - [0Hz  - 1KHz]
+2 - [1KHz - 6KHz]
+3 - [6KHz - 9KHz]
+4 - [9KHz - 12KHz]
+5 - [12KHz - 15KHz]
+6 - [15KHz - 20KHz]
+*/
+const int col_intervals[6] = {1000, 6000, 9000, 12000, 15000, 20000};
+
+const uint32_t pal_size_block = 24;
+
+//from light to dark
+const uint32_t colors_blocks[24] = {
+    0x3390FF, 0x337DFF, 0x3364FF, 0x3346FF,     //blue (1)
+    0x4DD0CA, 0x34DED6, 0x22E4DB, 0x14ECE1,     //light blue (2)
+    0x48FAA1, 0x3DE893, 0x33DA87, 0x2DC077,     //green (3)
+    0xE2DC1A, 0xEAE421, 0xF3ED26, 0xFCF504,     //yellow (4)
+    0xFF5ACD, 0xF750C5, 0xF047BD, 0xE229AA,     //magenta (5)
+    0xFC887E, 0xFA6E62, 0xF84F40, 0xFC1703      //red (6)
+
+};
+
 
 const uint32_t color_black = 0x000000;
 
-}
+} //ldata
+} //namespace cmusic
 
 #endif

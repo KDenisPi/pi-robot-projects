@@ -36,7 +36,7 @@ public:
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__) + " Items count: " + std::to_string(items_count) + " Extend: " + std::to_string(extend_data));
 
         assert(items_count > 0 && items_count <1000);
-        _data = OutData(new uint32_t[_items_count]);
+        _data = OutData(new MeasData[_items_count]);
     }
 
     /**
@@ -149,7 +149,42 @@ public:
         return true;
     }
 
+    /**
+     * @brief
+     *
+     */
     virtual void process_data() = 0;
+
+    /**
+     * @brief Get the color interval by freqency
+     *
+     * @param freq
+     * @return const int color set index
+     */
+    virtual const int get_interval_by_freq(const int freq) const{
+        for(int i=0; i<5; i++){
+            if(freq <= ldata::col_intervals[i]) return i;
+        }
+
+        return 5;
+    }
+
+    /**
+     * @brief Get the color by power level
+     *
+     * @param power - power level
+     * @param average_level - avarage power level
+     * @return const int color index
+     */
+    virtual const int get_color_by_power(const int power, const int average_level) const {
+        const int quoter = average_level/2;
+        for(int i=0; i<3; i++){
+            if(power < quoter*i) return i;
+        }
+
+        return 3;
+    }
+
 
 private:
     /**

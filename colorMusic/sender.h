@@ -31,7 +31,7 @@ public:
     Sender(const CrossDataPtr& data, const int sleds=300) : _data(data){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data size: " + std::to_string(FftProc::freq_interval()));
 
-        data_out = OutData(new uint32_t[FftProc::freq_interval()]);
+        data_out = OutData(new MeasData[FftProc::freq_interval()]);
         data_out_len = FftProc::freq_interval();
     }
 

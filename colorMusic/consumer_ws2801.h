@@ -141,9 +141,9 @@ public:
 
         for( std::size_t lidx = 0; lidx < items_count(); lidx++ ){
             const int idx = lidx*3;
-            ledData->at(idx)     = (_data[lidx] & 0xFF);
-            ledData->at(idx + 1) = ((_data[lidx] >> 8 ) & 0xFF);
-            ledData->at(idx + 2) = ((_data[lidx] >> 16 ) & 0xFF);
+            ledData->at(idx)     = (_data[lidx].first & 0xFF);
+            ledData->at(idx + 1) = ((_data[lidx].first >> 8 ) & 0xFF);
+            ledData->at(idx + 2) = ((_data[lidx].first >> 16 ) & 0xFF);
         }
 
         if(!p_pspi->data_rw(ledData->data(), ledData->size())){

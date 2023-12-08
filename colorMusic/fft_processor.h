@@ -18,11 +18,13 @@ namespace cmusic {
 #include <chrono>
 #include <ctime>
 #include <memory>
+#include <tuple>
 #include <fftw3.h>
 
 #include "logger.h"
 
-using OutData = std::unique_ptr<uint32_t[]>;
+using MeasData = std::pair<uint32_t, uint32_t>;
+using OutData = std::unique_ptr<MeasData[]>;
 using FftDouble = std::unique_ptr<double, std::function<void(double*)>>;
 using FftComplex = std::unique_ptr<fftw_complex, std::function<void(fftw_complex*)>>;
 
@@ -82,11 +84,9 @@ public:
         tp_start = std::chrono::system_clock::now();
 
         for(int i=0; i<d_size_in; i++){
-            //buff_in[i] = data_in[i];
             buff_in.get()[i] = data_in[i];
         }
 
-        //my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in, buff_out, FFTW_ESTIMATE);
         my_plan = fftw_plan_dft_r2c_1d(chunk_size(), buff_in.get(), buff_out.get(), FFTW_ESTIMATE);
         fftw_execute(my_plan);
         set_power_correction(0.0);
@@ -97,9 +97,7 @@ public:
             2. Ignore negative values (?)
             */
             const fftw_complex* cpx = buff_out.get();
-            //if(buff_out[j][0]!=0 || buff_out[j][1]!=0){
             if(cpx[j][0]!=0 || cpx[j][1]!=0){
-                //const double val = 10*log10(buff_out[j][0]*buff_out[j][0]+buff_out[j][1]*buff_out[j][1]);
                 const double val = 10*log10(cpx[j][0]*cpx[j][0]+cpx[j][1]*cpx[j][1]);
 
                 if(val < val_min)

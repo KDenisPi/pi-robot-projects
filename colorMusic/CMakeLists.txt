@@ -1,12 +1,13 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.12)
 
 #project name
 project(cmusic)
+enable_testing()
 
 set(DAEMON ${PROJECT_NAME}d)
 
 set(VER_MJR 0)
-set(VER_MIN 1)
+set(VER_MIN 10)
 
 #
 # C++ 14
@@ -71,4 +72,6 @@ aux_source_directory(${PROJECT_SOURCE_DIR} CMUSIC_SOURCES)
 
 add_executable(${DAEMON} ${CMUSIC_SOURCES})
 target_link_libraries(${DAEMON} ${EXTRA_LIBS})
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
 
