@@ -12,16 +12,19 @@
 #ifndef CMUSIC_FFT
 #define CMUSIC_FFT
 
-namespace cmusic {
-
 #include <time.h>
 #include <chrono>
 #include <ctime>
 #include <memory>
 #include <tuple>
 #include <fftw3.h>
+#include <cstdint>
+#include <functional>
+
+namespace cmusic {
 
 #include "logger.h"
+#include "cmusicdata.h"
 
 using MeasData = std::pair<uint32_t, uint32_t>;
 using OutData = std::unique_ptr<MeasData[]>;
@@ -201,8 +204,12 @@ public:
         return _freq_per_coefficient;
     }
 
+    const int chunks_to_measurement_interval() {
+        return chunks_to_mitv;
+    }
+
 private:
-    static const int _freq = 40000;     //Base frequency. Constant (samples/sec) - 40000
+    static const int _freq = 44100;     //Base frequency. Constant (samples/sec) - 40000
 
     static const int _chunk_interval = 50; //milliseconds
 

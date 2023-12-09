@@ -9,7 +9,6 @@ include_directories(BEFORE
 )
 
 add_executable(test_pal test_palette.cpp)
+target_link_libraries(test_pal ${EXTRA_LIBS})
 
-
-target_link_libraries(test_pal ${TEST_GPIO_LIBS})
-add_test(NAME Gpio_Simple COMMAND sudo test_gpio)
+#add_test(NAME Gpio_Simple COMMAND sudo test_gpio)

@@ -4,3 +4,4 @@ cmake_minimum_required(VERSION 3.12)
 project(cm-tests)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/test-palette)
+add_subdirectory(${PROJECT_SOURCE_DIR}/stream-info)

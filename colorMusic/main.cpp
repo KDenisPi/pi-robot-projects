@@ -15,7 +15,6 @@
 
 #include "logger.h"
 #include "colormusic.h"
-#include "consumer_html.h"
 
 using namespace std;
 
