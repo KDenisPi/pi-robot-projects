@@ -87,20 +87,25 @@ Intervals
 5 - [12KHz - 15KHz]
 6 - [15KHz - 20KHz]
 */
-const int col_intervals[6] = {1000, 6000, 9000, 12000, 15000, 20000};
+const int col_intervals[12] = {500, 1000, 1500, 2000, 2500, 3000, 4000, 6000, 8000, 10000, 15000, 22000};
 
 const uint32_t pal_size_block = 24;
-const uint32_t pal_colors_per_block = 4;
+const uint32_t pal_colors_per_block = 2;
 
 //from light to dark
 const uint32_t colors_blocks[24] = {
-    0x3390FF, 0x337DFF, 0x3364FF, 0x3346FF,     //blue (1)
-    0x4DD0CA, 0x34DED6, 0x22E4DB, 0x14ECE1,     //light blue (2)
-    0x48FAA1, 0x3DE893, 0x33DA87, 0x2DC077,     //green (3)
-    0xE2DC1A, 0xEAE421, 0xF3ED26, 0xFCF504,     //yellow (4)
-    0xFF5ACD, 0xF750C5, 0xF047BD, 0xE229AA,     //magenta (5)
-    0xFC887E, 0xFA6E62, 0xF84F40, 0xFC1703      //red (6)
-
+    0x640DC6, 0x7809F7,     //violet
+    0x1A4AED, 0x1476EC,     //blue 1
+    0x3390FF, 0x3364FF,     //blue 2
+    0x2C9BEB, 0x1599F8,     //light blue
+    0x20A505, 0x31F30B,     //green 1
+    0x3DE893, 0x33DA87,     //green 2
+    0x9DCF0C, 0xBAF510,     //green-yellow
+    0xE2DC1A, 0xFCF504,     //yellow
+    0xC26F0B, 0xF68C0C,     //orange
+    0xD51F35, 0xF30C28,     //red 1
+    0xFA6E62, 0xFC1703,     //red 2
+    0xB90DB7, 0xEE12EA      //magenta
 };
 
 

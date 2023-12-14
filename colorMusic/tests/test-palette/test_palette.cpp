@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
     const char* _table_e = "</table>\n";
     const char* _footer = "</body>\n</html>";
 
-    int brake_item = 4;
+    std::cout << "Freq intervals " << sizeof(cmusic::ldata::col_intervals)/sizeof(int) << std::endl;
 
     std::ofstream  fd;
     fd.open("test_palette.html", std::ios::out | std::ios::trunc);
@@ -39,7 +39,7 @@ int main (int argc, char* argv[])
         fd << "<tr>\n";
         for(int i = 0; i < cmusic::ldata::pal_size_block; i++){
             fd << "<td style=\"background-color:#" << std::hex << cmusic::ldata::colors_blocks[i] << ";\">" << "0x" << std::hex << cmusic::ldata::colors_blocks[i] <<"</td>" << std::endl;
-            if(i>0 && ((i+1)%brake_item)==0){
+            if(i>0 && ((i+1)%cmusic::ldata::pal_colors_per_block)==0){
                 fd << "</tr>\n" << i+1 <<"<tr>\n";
             }
         }

@@ -162,11 +162,12 @@ public:
      * @return const int color set index
      */
     virtual const int get_interval_by_freq(const int freq) const{
-        for(int i=0; i<5; i++){
+        const int intervals = sizeof(cmusic::ldata::col_intervals)/sizeof(int);
+        for(int i=0; i<intervals; i++){
             if(freq <= ldata::col_intervals[i]) return i;
         }
 
-        return 5;
+        return (intervals-1);
     }
 
     /**
@@ -178,11 +179,7 @@ public:
      */
     virtual const int get_color_by_power(const int power, const int average_level) const {
         const int quoter = average_level/2;
-        for(int i=1; i<=3; i++){
-            if(power < quoter*i) return i-1;
-        }
-
-        return 3;
+        return (power < quoter ? 0 : 1);
     }
 
 
