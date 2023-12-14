@@ -41,7 +41,7 @@ public:
      *
      * @param leds_count
      */
-    CmrWS2801(const int leds_count) : Consumer(leds_count, false)
+    CmrWS2801(const int leds_count, const bool extend_data=false) : Consumer(leds_count, extend_data)
     {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
 
