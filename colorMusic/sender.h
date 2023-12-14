@@ -28,27 +28,58 @@ namespace cmusic {
 
 class Sender : public piutils::Threaded {
 public:
-    Sender(const CrossDataPtr& data, const int sleds=300) : _data(data){
+    Sender(const CrossDataPtr& data, const int sleds=63) : _data(data){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data size: " + std::to_string(FftProc::freq_interval()));
 
         data_out = OutData(new MeasData[FftProc::freq_interval()]);
-        data_out_len = FftProc::freq_interval();
+
+        fft_proc = std::make_shared<cmusic::FftProc>();
+        chtml = std::make_shared<cmusic::CmrHtml>(true);
+        cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(sleds, true);
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    const bool is_html_consumer() const {
+        return false && (chtml);
+    }
+
+    /**
+     * @brief Destroy the Sender object
+     *
+     */
     virtual ~Sender() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     bool start(){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
         return piutils::Threaded::start<Sender>(this);
     }
 
+    /**
+     * @brief
+     *
+     */
     void stop(){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
         piutils::Threaded::stop();
     }
 
+    /**
+     * @brief
+     *
+     */
     void wait(){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
         piutils::Threaded::wait();
@@ -58,21 +89,19 @@ public:
         return _data->get_size();
     }
 
-    static void worker(Sender* psend){
+    static void worker(Sender* p){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Started");
 
         int i_idx = 0;      //Index for received values
         const int data_count = 0; //Number of received values
         int load_loops = 0; //The number of loops necessary for destination array filling
 
-        std::shared_ptr<cmusic::FftProc> fft_proc = std::make_shared<cmusic::FftProc>();
-        //std::shared_ptr<cmusic::CmrHtml> chtml = std::make_shared<cmusic::CmrHtml>(true);
-        std::shared_ptr<cmusic::CmrWS2801> cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(63, true); //32);
+        if(p->is_html_consumer())
+            p->chtml->start();
 
-        //chtml->start();
-        cmrWs2801->start();
+        p->cmrWs2801->start();
 
-        auto fn_event = [psend](int idx) { return ((idx == psend->_data->idx.load()) && !psend->is_stop_signal());};
+        auto fn_event = [p](int idx) { return ((idx == p->_data->idx.load()) && !p->is_stop_signal());};
         for(;;){
 
             while(fn_event(i_idx))
@@ -80,36 +109,48 @@ public:
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
-            i_idx = psend->_data->idx;
+            i_idx = p->_data->idx;
 
-            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data index: " + std::to_string(i_idx) + " or finish " + std::to_string(psend->is_stop_signal()));
+            logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data index: " + std::to_string(i_idx) + " or finish " + std::to_string(p->is_stop_signal()));
 
-            if(psend->is_stop_signal()){
+            if(p->is_stop_signal()){
                 break;
             }
 
-            auto rawdata = psend->_data->get(i_idx);
-            fft_proc->process(rawdata, psend->get_size(), psend->data_out, psend->d_size());
+            auto rawdata = p->_data->get(i_idx);
+            p->fft_proc->process(rawdata, p->get_size(), p->data_out, p->d_size());
 
-            //chtml->process(psend->data_out , psend->d_size(), fft_proc->power_correction());
-            cmrWs2801->process(psend->data_out , psend->d_size(), fft_proc->power_correction());
+            p->cmrWs2801->process(p->data_out , p->d_size(), p->fft_proc->power_correction());
+
+            if(p->is_html_consumer())
+                p->chtml->process(p->data_out , p->d_size(), p->fft_proc->power_correction());
         }
 
-        //chtml->stop();
-        cmrWs2801->stop();
+        p->cmrWs2801->stop();
+
+        if(p->is_html_consumer())
+            p->chtml->stop();
 
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");
     }
 
 public:
 
+    /**
+     * @brief
+     *
+     * @return const int
+     */
     const int d_size() const {
-        return data_out_len;
+        return FftProc::freq_interval();
     }
 
-    CrossDataPtr _data;  //raw data received from received
-    OutData data_out;     //data prepeared for output
-    int data_out_len;
+    CrossDataPtr _data;     //raw data received from received
+    OutData data_out;       //data prepeared for output
+
+    std::shared_ptr<cmusic::FftProc> fft_proc;
+    std::shared_ptr<cmusic::CmrHtml> chtml;
+    std::shared_ptr<cmusic::CmrWS2801> cmrWs2801;
 };
 
 }

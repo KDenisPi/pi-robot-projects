@@ -36,6 +36,10 @@ using LedData = std::unique_ptr<std::vector<uint8_t>>;
  */
 class CmrWS2801 : public Consumer {
 public:
+
+    static const int GPIO_CE0 = 19;
+    static const int GPIO_CE1 = 18;
+
     /**
      * @brief Construct a new consumer for LED WS2801 object
      *
@@ -46,14 +50,14 @@ public:
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
 
         pspi_cfg cfg;
-        cfg.speed[0] = pirobot::spi::SPI_SPEED::MHZ_2; // 25 Mhz
-        cfg.speed[1] = pirobot::spi::SPI_SPEED::MHZ_2; // 25 Mhz
+        cfg.speed[0] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
+        cfg.speed[1] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
 
         g_prov = std::make_shared<pirobot::gpio::GpioProviderSimple>();
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " GPIO Provider: " + g_prov->printConfig());
 
-        p_gpio_ce0 = std::make_shared<pirobot::gpio::Gpio>(19, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
-        p_gpio_ce1 = std::make_shared<pirobot::gpio::Gpio>(18, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
+        p_gpio_ce0 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE0, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
+        p_gpio_ce1 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE1, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
 
         p_pspi = std::make_shared<pirobot::spi::SPI>(std::string("PI_SPI"), cfg, p_gpio_ce0, p_gpio_ce1);
 

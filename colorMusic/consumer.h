@@ -141,6 +141,10 @@ public:
         return _extend_data;
     }
 
+    void set_entend_data(const bool extend_data){
+        _extend_data = extend_data;
+    }
+
     const int items_count() const {
         return _items_count;
     }
