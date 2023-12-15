@@ -15,6 +15,7 @@
 #include <string>
 #include <memory>
 
+#include "version.h"
 #include "logger.h"
 #include "cmusicdata.h"
 #include "receiver.h"

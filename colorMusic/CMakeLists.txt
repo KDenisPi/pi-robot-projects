@@ -7,7 +7,7 @@ enable_testing()
 set(DAEMON ${PROJECT_NAME}d)
 
 set(VER_MJR 0)
-set(VER_MIN 10)
+set(VER_MIN 15)
 
 #
 # C++ 14
