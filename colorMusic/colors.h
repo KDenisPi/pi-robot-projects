@@ -87,7 +87,7 @@ Intervals
 5 - [12KHz - 15KHz]
 6 - [15KHz - 20KHz]
 */
-const int col_intervals[12] = {500, 1000, 1500, 2000, 2500, 3000, 4000, 6000, 8000, 10000, 15000, 22000};
+const int col_intervals[12] = {300, 500, 1000, 1500, 2000, 2250, 2500, 3000, 3500, 4000, 6000, 22000};
 
 const uint32_t pal_size_block = 24;
 const uint32_t pal_colors_per_block = 2;
@@ -96,10 +96,10 @@ const uint32_t pal_colors_per_block = 2;
 const uint32_t colors_blocks[24] = {
     0x640DC6, 0x7809F7,     //violet
     0x1A4AED, 0x1476EC,     //blue 1
-    0x3390FF, 0x3364FF,     //blue 2
     0x2C9BEB, 0x1599F8,     //light blue
-    0x20A505, 0x31F30B,     //green 1
-    0x3DE893, 0x33DA87,     //green 2
+    0x28ADD1, 0x38C8EE,
+    0x20A505, 0x33DA87,     //green 1
+    0x3DE893, 0x31F30B,     //green 2
     0x9DCF0C, 0xBAF510,     //green-yellow
     0xE2DC1A, 0xFCF504,     //yellow
     0xC26F0B, 0xF68C0C,     //orange

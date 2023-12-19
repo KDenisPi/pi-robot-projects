@@ -41,7 +41,7 @@ public:
             _sendr->add_consumer<cmusic::CmrWS2801>(63, true);
 
         _sendr->add_consumer<cmusic::CmrHtml>(200, false);
-        _sendr->add_consumer<cmusic::CmrHtml>(63, false);
+        _sendr->add_consumer<cmusic::CmrHtml>(63, true);
     }
 
     virtual ~ColorMusic(){
