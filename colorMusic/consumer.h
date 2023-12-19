@@ -53,7 +53,6 @@ public:
      */
     void stop(){
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__));
-
         piutils::Threaded::stop();
     }
 
@@ -65,6 +64,15 @@ public:
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__));
         piutils::Threaded::wait();
     }
+
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    virtual bool start() = 0;
+
 
     /**
      * @brief

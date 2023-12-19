@@ -26,26 +26,29 @@
 
 namespace cmusic {
 
+using Consm = std::shared_ptr<cmusic::Consumer>;
+using VConsm = std::vector<Consm>;
+
 class Sender : public piutils::Threaded {
 public:
     Sender(const CrossDataPtr& data, const int sleds=63) : _data(data){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data size: " + std::to_string(FftProc::freq_interval()));
 
         data_out = OutData(new MeasData[FftProc::freq_interval()]);
-
         fft_proc = std::make_shared<cmusic::FftProc>();
-        chtml = std::make_shared<cmusic::CmrHtml>(true);
-        cmrWs2801 = std::make_shared<cmusic::CmrWS2801>(sleds, true);
     }
 
     /**
      * @brief
      *
-     * @return true
-     * @return false
+     * @tparam T
+     * @param items_count
+     * @param extend_data
      */
-    const bool is_html_consumer() const {
-        return false && (chtml);
+    template<class T>
+    void add_consumer(const int items_count, const bool extend_data){
+        consumers.push_back(std::make_shared<T>(items_count, extend_data));
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Added consumer: " + " Consumers: " + std::to_string(consumers.size()));
     }
 
     /**
@@ -54,6 +57,7 @@ public:
      */
     virtual ~Sender() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
+        consumers.clear();
     }
 
     /**
@@ -89,6 +93,11 @@ public:
         return _data->get_size();
     }
 
+    /**
+     * @brief
+     *
+     * @param p
+     */
     static void worker(Sender* p){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Started");
 
@@ -96,10 +105,9 @@ public:
         const int data_count = 0; //Number of received values
         int load_loops = 0; //The number of loops necessary for destination array filling
 
-        if(p->is_html_consumer())
-            p->chtml->start();
-
-        p->cmrWs2801->start();
+        for (VConsm::iterator it = p->consumers.begin() ; it != p->consumers.end(); ++it){
+            it->get()->start();
+        }
 
         auto fn_event = [p](int idx) { return ((idx == p->_data->idx.load()) && !p->is_stop_signal());};
         for(;;){
@@ -120,16 +128,14 @@ public:
             auto rawdata = p->_data->get(i_idx);
             p->fft_proc->process(rawdata, p->get_size(), p->data_out, p->d_size());
 
-            p->cmrWs2801->process(p->data_out , p->d_size(), p->fft_proc->power_correction());
-
-            if(p->is_html_consumer())
-                p->chtml->process(p->data_out , p->d_size(), p->fft_proc->power_correction());
+            for (VConsm::iterator it = p->consumers.begin() ; it != p->consumers.end(); ++it){
+                it->get()->process(p->data_out , p->d_size(), p->fft_proc->power_correction());
+            }
         }
 
-        p->cmrWs2801->stop();
-
-        if(p->is_html_consumer())
-            p->chtml->stop();
+        for (VConsm::iterator it = p->consumers.begin() ; it != p->consumers.end(); ++it){
+            it->get()->stop();
+        }
 
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Finished");
     }
@@ -149,8 +155,7 @@ public:
     OutData data_out;       //data prepeared for output
 
     std::shared_ptr<cmusic::FftProc> fft_proc;
-    std::shared_ptr<cmusic::CmrHtml> chtml;
-    std::shared_ptr<cmusic::CmrWS2801> cmrWs2801;
+    VConsm consumers;
 };
 
 }

@@ -79,7 +79,13 @@ public:
         g_prov.reset();
     }
 
-    bool start(){
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    virtual bool start() override {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
         return piutils::Threaded::start<CmrWS2801>(this);
     }

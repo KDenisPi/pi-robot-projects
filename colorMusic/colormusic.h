@@ -36,11 +36,16 @@ public:
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
+
+        if(cmusic::is_real_hardware())
+            _sendr->add_consumer<cmusic::CmrWS2801>(63, true);
+
+        _sendr->add_consumer<cmusic::CmrHtml>(200, false);
+        _sendr->add_consumer<cmusic::CmrHtml>(63, false);
     }
 
     virtual ~ColorMusic(){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
-
         stop();
     }
 
