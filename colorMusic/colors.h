@@ -87,7 +87,9 @@ Intervals
 5 - [12KHz - 15KHz]
 6 - [15KHz - 20KHz]
 */
-const int col_intervals[12] = {300, 500, 1000, 1500, 2000, 2250, 2500, 3000, 3500, 4000, 6000, 22000};
+const int col_intervals[12] = {300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 6000, 9000, 22000};
+
+const int col_intervals_count = sizeof(cmusic::ldata::col_intervals)/sizeof(int);
 
 const uint32_t pal_size_block = 24;
 const uint32_t pal_colors_per_block = 2;

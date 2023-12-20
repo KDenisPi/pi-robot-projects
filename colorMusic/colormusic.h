@@ -38,17 +38,29 @@ public:
         _sendr = std::make_shared<Sender>(_data);
 
         if(cmusic::is_real_hardware())
-            _sendr->add_consumer<cmusic::CmrWS2801>(63, true);
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true);
 
-        _sendr->add_consumer<cmusic::CmrHtml>(200, false);
-        _sendr->add_consumer<cmusic::CmrHtml>(63, true);
+        _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false);
+        _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true);
     }
 
+    const int ws2801_leds() const {
+        return 63;
+    }
+
+    /**
+     * @brief Destroy the Color Music object
+     *
+     */
     virtual ~ColorMusic(){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
         stop();
     }
 
+    /**
+     * @brief
+     *
+     */
     void stop(){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
 

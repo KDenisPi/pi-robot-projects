@@ -174,7 +174,7 @@ public:
      * @return const int color set index
      */
     virtual const int get_interval_by_freq(const int freq) const{
-        const int intervals = sizeof(cmusic::ldata::col_intervals)/sizeof(int);
+        const int intervals = cmusic::ldata::col_intervals_count;
         for(int i=0; i<intervals; i++){
             if(freq <= ldata::col_intervals[i]) return i;
         }
@@ -224,7 +224,7 @@ private:
             MeasData val = {0,0};
 
             while(j < (items_count()-1)){
-                val = {0,0};
+                val = data[j*idx];
                 for(int kg_idx = j*idx; kg_idx<((j+1)*idx); kg_idx++){
                     if(data[kg_idx].first > val.first)
                         val = data[kg_idx];
@@ -233,7 +233,7 @@ private:
                 j++;
             }
 
-            val = {0,0};
+            val = data[j*idx];
             for(int kg_idx = j*idx; kg_idx<d_size; kg_idx++){
                 if(data[kg_idx].first > val.first)
                     val = data[kg_idx];
@@ -255,30 +255,69 @@ private:
     virtual bool freq_to_color(const uint32_t pwr_avg){
         int color;
         int j = 0; //for extend data
+        std::vector<int> freq_count = std::vector<int>(cmusic::ldata::col_intervals_count*2, 0);
+
+        //std::cout << " items_count: " << items_count() << std::endl;
 
         for(int i=0; i<items_count(); i++){
             const auto freq_idx = get_interval_by_freq(_data[i].second);
             const auto pwr_idx = get_color_by_power(_data[i].first, pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
-/*
-            std::cout << i << " Freq: " << std::dec << _data[i].second << " Idx: " << freq_idx << " Pwr: " << _data[i].first << " Idx: " << pwr_idx << " Avg: " << pwr_avg/2
-                << " color idx: " << color << " color: " << std::hex << ldata::colors_blocks[color] << std::endl;
-*/
-            if(!is_extend_data()) //easy way
+
+            //std::cout << "i: " << i << " Fst: " << _data[i].first << " Scd: " << _data[i].second << std::endl;
+
+            if(_data[i].first > 0){
+                freq_count[freq_idx*2 + pwr_idx]++;
+                j++;
+            }
+
+            if(!is_extend_data()){ //easy way
                 _data[i].first = (_data[i].first == 0 ? ldata::color_black : ldata::colors_blocks[color]);
-            else {
-                if(_data[i].first > 0){
-                     _data[j++].first = ldata::colors_blocks[color];
+            }
+            else{
+                if(_data[i].first == 0){
+                    _data[i].first = ldata::color_black;  //case when we do not have any values
                 }
+
             }
         }
 
-        if(is_extend_data() && j>0 && j<items_count()){
-            int k=0;
-            for(int i=j; i<items_count(); i++){
-                _data[i].first = _data[k++].first;
-                if(k>=j) k=0;
+/*
+        int freq_count_all = 0;
+        for(auto i = 0; i < freq_count.size(); i++){
+             std::cout << i << "-" << freq_count[i] << " ";
+             freq_count_all += freq_count[i];
+        }
+        std::cout << std::endl << " ---- " << freq_count_all << std::endl;
+*/
+        /*
+        Extend data in depends on number values for some frequency
+        */
+        if(is_extend_data() && j>0){
+            //j - number of real values
+            const int items_per_freq = items_count()/j;
+
+            int i_idx = 0;
+            int color = -1;
+            for(int i=0; i<freq_count.size(); i++){
+
+                if(freq_count[i]==0)
+                    continue;
+
+                const auto pwr_idx = i%2;
+                color = (i/2)*ldata::pal_colors_per_block + pwr_idx;
+
+                for(int k=0; k<(freq_count[i]*items_per_freq); k++){
+                    _data[i_idx++].first = ldata::colors_blocks[color];
+                }
             }
+
+            if(color >= 0 && (i_idx < items_count()) ){
+                while(i_idx < items_count()){
+                    _data[i_idx++].first = ldata::colors_blocks[color];
+                }
+            }
+
         }
 
         return true;

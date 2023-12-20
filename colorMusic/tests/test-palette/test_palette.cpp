@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
     const char* _table_e = "</table>\n";
     const char* _footer = "</body>\n</html>";
 
-    std::cout << "Freq intervals " << sizeof(cmusic::ldata::col_intervals)/sizeof(int) << std::endl;
+    std::cout << "Freq intervals " << cmusic::ldata::col_intervals_count << std::endl;
 
     std::ofstream  fd;
     fd.open("test_palette.html", std::ios::out | std::ios::trunc);
