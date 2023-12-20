@@ -30,8 +30,8 @@ public:
      * @param ln_pfile
      * @param rdir
      */
-    CmrHtml(const int items_count, const bool extend_data = false, const int ln_pfile = 200, const std::string rdir = "./")
-        : Consumer(items_count, extend_data), _max_lines_per_file(ln_pfile), _root_dir(rdir){
+    CmrHtml(const int items_count, const bool extend_data = false, const int skip_loops = -1, const int ln_pfile = 200, const std::string rdir = "./")
+        : Consumer(items_count, extend_data, skip_loops), _max_lines_per_file(ln_pfile), _root_dir(rdir){
 
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__));
         open(0);
@@ -115,6 +115,10 @@ public:
         if(_line_count>=_max_lines_per_file){
             reopen();
         }
+    }
+
+    virtual const std::string to_string() override {
+        return std::string("CmrHtml");
     }
 
 private:

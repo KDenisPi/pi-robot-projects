@@ -46,9 +46,10 @@ public:
      * @param extend_data
      */
     template<class T>
-    void add_consumer(const int items_count, const bool extend_data){
-        consumers.push_back(std::make_shared<T>(items_count, extend_data));
-        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Added consumer: " + " Consumers: " + std::to_string(consumers.size()));
+    void add_consumer(const int items_count, const bool extend_data, const int skip_loops = -1){
+        consumers.push_back(std::make_shared<T>(items_count, extend_data, skip_loops));
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Added consumer: " + consumers.back()->to_string() + " Items: " + std::to_string(consumers.back()->items_count())
+            + " Consumers: " + std::to_string(consumers.size()));
     }
 
     /**

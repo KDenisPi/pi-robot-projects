@@ -31,8 +31,9 @@ public:
      *
      * @param items_count
      * @param extend_data
+     * @param skip_loops
      */
-    Consumer(const int items_count, const bool extend_data) : _items_count(items_count), _extend_data(extend_data) {
+    Consumer(const int items_count, const bool extend_data, const int skip_loops = -1) : _items_count(items_count), _extend_data(extend_data), _skip_loops(skip_loops) {
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__) + " Items count: " + std::to_string(items_count) + " Extend: " + std::to_string(extend_data));
 
         assert(items_count > 0 && items_count <1000);
@@ -74,6 +75,19 @@ public:
     virtual bool start() = 0;
 
 
+    const bool is_skip_loop() {
+        if(skip_loops() <= 0)
+            return false;
+
+        const bool skip = ((_loop_counter >= 0) && (_loop_counter < skip_loops()));
+
+        _loop_counter++;
+        if(_loop_counter > skip_loops())
+            _loop_counter = 0;
+
+        return skip;
+    }
+
     /**
      * @brief
      *
@@ -85,9 +99,12 @@ public:
         if(is_has_job()) //consumer process the privious data
             return false;
 
-        bool ready = is_ready();
-        if(!ready) //Consumer object cound not start
+        if(!is_ready()) //Consumer object cound not start
             return false;
+
+        if(is_skip_loop()){
+            return true;
+        }
 
         bool trans = transformate_data(data, d_size);
         if(trans){
@@ -194,6 +211,11 @@ public:
         return (power < quoter ? 0 : 1);
     }
 
+    const int skip_loops() const {
+        return _skip_loops;
+    }
+
+    virtual const std::string to_string() = 0;
 
 private:
     /**
@@ -339,6 +361,9 @@ private:
 protected:
     int _items_count;      //number of output items supported by this consumer
     OutData _data;
+    int _skip_loops;
+
+    int _loop_counter = -1;
 
 };
 
