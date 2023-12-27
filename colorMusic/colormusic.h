@@ -38,10 +38,10 @@ public:
         _sendr = std::make_shared<Sender>(_data);
 
         if(cmusic::is_real_hardware())
-            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, 4);
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, 3);
         else{
             _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false);
-            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  4);
+            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  3);
         }
     }
 

@@ -151,7 +151,7 @@ public:
 
         for( std::size_t lidx = 0; lidx < items_count(); lidx++ ){
             const int idx = lidx*3;
-            const auto val = std::get<0>(_data[lidx]);
+            const auto val = std::get<2>(_data[lidx]);
             ledData->at(idx)     = (val & 0xFF);
             ledData->at(idx + 1) = ((val >> 8) & 0xFF);
             ledData->at(idx + 2) = ((val >> 16) & 0xFF);
