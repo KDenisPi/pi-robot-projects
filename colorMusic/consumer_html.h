@@ -106,7 +106,7 @@ public:
         _fd << "<td>" << std::to_string(_line_count) << "</td>" << std::endl;
 
         for(int i=0; i<items_count(); i++){
-            _fd << "<td style=\"background-color:#" << std::hex << _data[i].first << ";\">" << "Freq: " << std::dec << _data[i].second << "&nbsp;0x" << std::hex << _data[i].first <<"</td>";
+            _fd << "<td style=\"background-color:#" << std::hex << std::get<2>(_data[i]) << ";\">" << std::dec << std::get<1>(_data[i]) << ":" << std::dec << std::get<0>(_data[i]) <<"</td>";
         }
         _fd << "</tr>"<< std::endl;
 

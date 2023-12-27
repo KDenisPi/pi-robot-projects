@@ -26,7 +26,7 @@ namespace cmusic {
 #include "logger.h"
 #include "cmusicdata.h"
 
-using MeasData = std::pair<uint32_t, uint32_t>;
+using MeasData = std::tuple<uint32_t, uint32_t, uint32_t>;
 using OutData = std::unique_ptr<MeasData[]>;
 using FftDouble = std::unique_ptr<double, std::function<void(double*)>>;
 using FftComplex = std::unique_ptr<fftw_complex, std::function<void(fftw_complex*)>>;
@@ -35,12 +35,10 @@ class FftProc {
 public:
     FftProc() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
+
         /*
         FFT data (In, Out, Plan)
         */
-        //buff_in = (double*) fftw_malloc(sizeof(double) * FftProc::chunk_size());
-        //buff_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FftProc::chunk_size());
-
         buff_in = FftDouble((double*)fftw_malloc(sizeof(double) * FftProc::chunk_size()), [](double* ptr) { fftw_free(ptr); });
         buff_out = FftComplex((fftw_complex*)fftw_malloc(sizeof(fftw_complex) * FftProc::chunk_size()), [](fftw_complex* ptr) { fftw_free(ptr); });
 
@@ -49,9 +47,6 @@ public:
 
     virtual ~FftProc() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
-
-        //fftw_free(buff_in);
-        //fftw_free(buff_out);
     }
 
     /**
@@ -120,11 +115,13 @@ public:
                 const int i_idx = j/chunks_to_mitv;
                 if(i_idx <= d_size_out){
                     if(res>0){
-                        data_out[i_idx-1] = MeasData((uint32_t)round(res), j*freq_per_coefficient());
+                        data_out[i_idx-1] = std::make_tuple((uint32_t)round(res), (uint32_t)(j*freq_per_coefficient()), (uint32_t)0);
                         not_empty_counter++;
+
+                        //std::cout << "x: " << i_idx-1 << " Fst: " << std::dec << std::get<0>(data_out[i_idx-1]) << " Scd: " << std::dec << std::get<1>(data_out[i_idx-1]) << " Thrd: 0x" << std::hex << std::get<2>(data_out[i_idx-1]) << std::endl;
                     }
                     else
-                        data_out[i_idx-1] = MeasData(0, j*freq_per_coefficient());
+                        data_out[i_idx-1] = std::make_tuple((uint32_t)0, (uint32_t)(j*freq_per_coefficient()), (uint32_t)0);
                 }
                 res = 0.0;
             }
@@ -135,11 +132,11 @@ public:
         const int i_idx = j/chunks_to_mitv;
         if(i_idx <= d_size_out){
             if(res>0){
-                data_out[i_idx-1] =  MeasData((uint32_t)round(res), j*freq_per_coefficient());
+                data_out[i_idx-1] =  std::make_tuple((uint32_t)round(res), j*freq_per_coefficient(), 0);
                 not_empty_counter++;
             }
             else
-                data_out[i_idx-1] = MeasData(0, j*freq_per_coefficient());
+                data_out[i_idx-1] = std::make_tuple(0, j*freq_per_coefficient(), 0);
         }
 
         fftw_destroy_plan(my_plan);

@@ -243,12 +243,12 @@ private:
         if(d_size > items_count()){
             const uint32_t idx = d_size/items_count();   //group values by
             int j = 0;
-            MeasData val = {0,0};
+            MeasData val = {0,0,0};
 
             while(j < (items_count()-1)){
                 val = data[j*idx];
                 for(int kg_idx = j*idx; kg_idx<((j+1)*idx); kg_idx++){
-                    if(data[kg_idx].first > val.first)
+                    if( std::get<0>(data[kg_idx]) > std::get<0>(val))
                         val = data[kg_idx];
                 }
                 _data[j] = val;
@@ -257,7 +257,7 @@ private:
 
             val = data[j*idx];
             for(int kg_idx = j*idx; kg_idx<d_size; kg_idx++){
-                if(data[kg_idx].first > val.first)
+                if(std::get<0>(data[kg_idx]) > std::get<0>(val))
                     val = data[kg_idx];
             }
             _data[j] = val;
@@ -282,33 +282,36 @@ private:
         //std::cout << " items_count: " << items_count() << std::endl;
 
         for(int i=0; i<items_count(); i++){
-            const auto freq_idx = get_interval_by_freq(_data[i].second);
-            const auto pwr_idx = get_color_by_power(_data[i].first, pwr_avg);
+            const auto freq_idx = get_interval_by_freq(std::get<1>(_data[i]));
+            const auto pwr_idx = get_color_by_power(std::get<0>(_data[i]), pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
 
-            //std::cout << "i: " << i << " Fst: " << _data[i].first << " Scd: " << _data[i].second << std::endl;
-
-            if(_data[i].first > 0){
+            if(std::get<0>(_data[i]) > 0){
                 freq_count[freq_idx*2 + pwr_idx]++;
                 j++;
             }
 
             if(!is_extend_data()){ //easy way
-                _data[i].first = (_data[i].first == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), clr_code);
             }
             else{
-                if(_data[i].first == 0){
-                    _data[i].first = ldata::color_black;  //case when we do not have any values
+                if( std::get<0>(_data[i]) == 0){
+                    _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), ldata::color_black);  //case when we do not have any values
                 }
 
             }
+
+            //std::cout << "i: " << i << " Fst: " << std::dec << std::get<0>(_data[i]) << " Scd: " << std::dec << std::get<1>(_data[i]) << " Thrd: 0x" << std::hex << std::get<2>(_data[i]) << std::endl;
         }
 
 /*
         int freq_count_all = 0;
         for(auto i = 0; i < freq_count.size(); i++){
-             std::cout << i << "-" << freq_count[i] << " ";
-             freq_count_all += freq_count[i];
+            if(freq_count[i] > 0){
+                std::cout << i << "-" << freq_count[i] << " ";
+                freq_count_all += freq_count[i];
+            }
         }
         std::cout << std::endl << " ---- " << freq_count_all << std::endl;
 */
@@ -318,6 +321,8 @@ private:
         if(is_extend_data() && j>0){
             //j - number of real values
             const int items_per_freq = items_count()/j;
+
+            //std::cout << " items_per_freq " << items_per_freq << " j " << j << std::endl;
 
             int i_idx = 0;
             int color = -1;
@@ -330,13 +335,13 @@ private:
                 color = (i/2)*ldata::pal_colors_per_block + pwr_idx;
 
                 for(int k=0; k<(freq_count[i]*items_per_freq); k++){
-                    _data[i_idx++].first = ldata::colors_blocks[color];
+                    _data[i_idx++] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
                 }
             }
 
             if(color >= 0 && (i_idx < items_count()) ){
                 while(i_idx < items_count()){
-                    _data[i_idx++].first = ldata::colors_blocks[color];
+                    _data[i_idx++] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
                 }
             }
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.12)
 
 #project name
 project(pi-robot-projects)
@@ -11,10 +11,10 @@ message( STATUS "REAL_HARDWARE:  ${REAL_HARDWARE}" )
 #
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message("debug mode")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -g -std=c++11 -fexceptions -Wno-psabi -Og")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -g -std=c++17 -fexceptions -Wno-psabi -Og")
 ELSE(CMAKE_BUILD_TYPE NOT STREQUAL "Debug")
     message("release with debug info mode")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS_RELWITHDEBINFO} -std=c++11 -fexceptions -Wno-psabi")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS_RELWITHDEBINFO} -std=c++17 -fexceptions -Wno-psabi")
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
