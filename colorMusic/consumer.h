@@ -14,6 +14,9 @@
 
 #include <cstdint>
 #include <memory>
+#include <tuple>
+
+#include "logger.h"
 #include "Threaded.h"
 
 namespace cmusic {
@@ -106,7 +109,7 @@ public:
             return true;
         }
 
-        bool trans = transformate_data(data, d_size);
+        bool trans = transformate_data(data, d_size, (uint32_t) pwr_avg);
         if(trans){
             bool fr2col = freq_to_color((uint32_t) pwr_avg);
 
@@ -227,7 +230,7 @@ private:
      * @return true - input data were tranformed successfully
      * @return false - could not transform input data to consumer view
      */
-    virtual bool transformate_data(const OutData& data, const int d_size){
+    virtual bool transformate_data(const OutData& data, const int d_size, const int average_level){
         //std::cout << "Input size: " << d_size << " Internal size: " << items_count() << std::endl;
 
         //the simplest scenario - inpur and cunsumer data have the same size and no data extension
@@ -238,6 +241,8 @@ private:
 
             return true;
         }
+
+        auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/3;};
 
         //
         if(d_size > items_count()){
@@ -251,7 +256,13 @@ private:
                     if( std::get<0>(data[kg_idx]) > std::get<0>(val))
                         val = data[kg_idx];
                 }
-                _data[j] = val;
+
+                //Ignore values less than some power value - 1/3 of average level now
+                if(std::get<0>(val) >= pw_ignore_below(average_level))
+                    _data[j] =  val;
+                else 
+                    _data[j] = std::make_tuple(0, std::get<1>(val), 0);
+
                 j++;
             }
 
@@ -260,7 +271,10 @@ private:
                 if(std::get<0>(data[kg_idx]) > std::get<0>(val))
                     val = data[kg_idx];
             }
-            _data[j] = val;
+            if(std::get<0>(val) >= pw_ignore_below(average_level))
+                _data[j] = val;
+            else 
+                _data[j] = std::make_tuple(0, std::get<1>(val), 0);
 
             return true;
         }
@@ -286,20 +300,18 @@ private:
             const auto pwr_idx = get_color_by_power(std::get<0>(_data[i]), pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
 
+            if(!is_extend_data()){ //easy way
+                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), clr_code);
+                continue;
+            }
+
             if(std::get<0>(_data[i]) > 0){
                 freq_count[freq_idx*2 + pwr_idx]++;
                 j++;
             }
-
-            if(!is_extend_data()){ //easy way
-                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? ldata::color_black : ldata::colors_blocks[color]);
-                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), clr_code);
-            }
             else{
-                if( std::get<0>(_data[i]) == 0){
-                    _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), ldata::color_black);  //case when we do not have any values
-                }
-
+                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), ldata::color_black);  //case when we do not have any values
             }
 
             //std::cout << "i: " << i << " Fst: " << std::dec << std::get<0>(_data[i]) << " Scd: " << std::dec << std::get<1>(_data[i]) << " Thrd: 0x" << std::hex << std::get<2>(_data[i]) << std::endl;
@@ -320,12 +332,24 @@ private:
         */
         if(is_extend_data() && j>0){
             //j - number of real values
+            if((items_count()/j) <= 2){
+                int i = 0;
+                while(j<items_count()){
+                    if(freq_count[i]>0){
+                        freq_count[i] += 1;
+                        j++;
+                    }
+
+                    i = (i < freq_count.size()-1 ? i+1 : 0);
+                }
+            }
             const int items_per_freq = items_count()/j;
 
             //std::cout << " items_per_freq " << items_per_freq << " j " << j << std::endl;
 
             int i_idx = 0;
             int color = -1;
+            int freq_count_all = 0;
             for(int i=0; i<freq_count.size(); i++){
 
                 if(freq_count[i]==0)
@@ -335,14 +359,20 @@ private:
                 color = (i/2)*ldata::pal_colors_per_block + pwr_idx;
 
                 for(int k=0; k<(freq_count[i]*items_per_freq); k++){
-                    _data[i_idx++] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    //_data[i_idx] = std::make_tuple(freq_count[i], i, ldata::colors_blocks[color]);
+                    i_idx++;
                 }
+                freq_count_all += freq_count[i];
             }
 
             if(color >= 0 && (i_idx < items_count()) ){
                 while(i_idx < items_count()){
-                    _data[i_idx++] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    //_data[i_idx] = std::make_tuple(j, items_per_freq, ldata::colors_blocks[color]);
+                    i_idx++;
                 }
+                //_data[i_idx] = std::make_tuple(freq_count_all, freq_count_all, ldata::colors_blocks[color]);
             }
 
         }
