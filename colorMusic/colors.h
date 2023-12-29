@@ -87,14 +87,15 @@ Intervals
 5 - [12KHz - 15KHz]
 6 - [15KHz - 20KHz]
 */
-const int col_intervals[12] = {300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 6000, 9000, 22000};
+const int col_intervals[14] = {100, 250, 300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 6000, 9000, 22000};
 
 const int col_intervals_count = sizeof(cmusic::ldata::col_intervals)/sizeof(int);
 
-const uint32_t pal_size_block = 24;
+const uint32_t pal_size_block = 28; //24;
 const uint32_t pal_colors_per_block = 2;
 
 //from light to dark
+/*
 const uint32_t colors_blocks[24] = {
     0x640DC6, 0x7809F7,     //violet
     0x1A4AED, 0x1476EC,     //blue 1
@@ -109,7 +110,24 @@ const uint32_t colors_blocks[24] = {
     0xFA6E62, 0xFC1703,     //red 2
     0xB90DB7, 0xEE12EA      //magenta
 };
+*/
 
+const uint32_t colors_blocks[28] = {
+        0x150580, 0x1505B0,
+        0x300580, 0x3005B0,
+	0x000080, 0x0000B0,
+	0x002080, 0x0020B0,
+	0x008000, 0x00B000,
+	0x008010, 0x00B010,
+	0x008025, 0x00B025,
+	0x805005, 0xB05005,
+	0x801000, 0xB01000,
+	0x804000, 0xB04000,
+	0x801040, 0xB01040,
+	0x800010, 0xB00010,
+	0x800000, 0xB00000,
+	0x800040, 0xB00040
+};
 
 const uint32_t color_black = 0x000000;
 
