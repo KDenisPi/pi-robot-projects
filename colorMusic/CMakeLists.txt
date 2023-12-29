@@ -51,7 +51,13 @@ message( STATUS "REAL_HARDWARE: ${REAL_HARDWARE}")
 find_library(PIUTILS_LIB pi-utils PATH ${PI_ROBOT_HOME_BUILD})
 find_library(PILIBRARY_LIB pi-library PATH ${PI_ROBOT_HOME_BUILD})
 
-set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} fftw3 pthread dl curl crypt fmt)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${PIUTILS_LIB} ${PILIBRARY_LIB} fftw3 pthread dl curl crypt)
+
+message( STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    message("cmusic 64")
+    set(EXTRA_LIBS  ${EXTRA_LIBS} fmt)
+ENDIF()
 
 #IF($ENV{USER} STREQUAL "pi")
 #    find_library(BCM_HOST_LIB bcm_host PATH "/opt/vc/lib")
