@@ -260,7 +260,7 @@ private:
                 //Ignore values less than some power value - 1/3 of average level now
                 if(std::get<0>(val) >= pw_ignore_below(average_level))
                     _data[j] =  val;
-                else 
+                else
                     _data[j] = std::make_tuple(0, std::get<1>(val), 0);
 
                 j++;
@@ -273,7 +273,7 @@ private:
             }
             if(std::get<0>(val) >= pw_ignore_below(average_level))
                 _data[j] = val;
-            else 
+            else
                 _data[j] = std::make_tuple(0, std::get<1>(val), 0);
 
             return true;
@@ -291,17 +291,19 @@ private:
     virtual bool freq_to_color(const uint32_t pwr_avg){
         int color;
         int j = 0; //for extend data
-        std::vector<int> freq_count = std::vector<int>(cmusic::ldata::col_intervals_count*2, 0);
+        std::vector<int> freq_count = std::vector<int>(color_intervals()*2, 0);
 
         //std::cout << " items_count: " << items_count() << std::endl;
 
+
+        const uint32_t* colors_blocks = colors_blocks;
         for(int i=0; i<items_count(); i++){
             const auto freq_idx = get_interval_by_freq(std::get<1>(_data[i]));
             const auto pwr_idx = get_color_by_power(std::get<0>(_data[i]), pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
 
             if(!is_extend_data()){ //easy way
-                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? ldata::color_black : ldata::colors_blocks[color]);
+                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? black_color() : colors_blocks[color]);
                 _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), clr_code);
                 continue;
             }
@@ -311,7 +313,7 @@ private:
                 j++;
             }
             else{
-                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), ldata::color_black);  //case when we do not have any values
+                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), black_color());  //case when we do not have any values
             }
 
             //std::cout << "i: " << i << " Fst: " << std::dec << std::get<0>(_data[i]) << " Scd: " << std::dec << std::get<1>(_data[i]) << " Thrd: 0x" << std::hex << std::get<2>(_data[i]) << std::endl;
@@ -359,7 +361,7 @@ private:
                 color = (i/2)*ldata::pal_colors_per_block + pwr_idx;
 
                 for(int k=0; k<(freq_count[i]*items_per_freq); k++){
-                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), colors_blocks[color]);
                     //_data[i_idx] = std::make_tuple(freq_count[i], i, ldata::colors_blocks[color]);
                     i_idx++;
                 }
@@ -368,7 +370,7 @@ private:
 
             if(color >= 0 && (i_idx < items_count()) ){
                 while(i_idx < items_count()){
-                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), ldata::colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), colors_blocks[color]);
                     //_data[i_idx] = std::make_tuple(j, items_per_freq, ldata::colors_blocks[color]);
                     i_idx++;
                 }
@@ -388,6 +390,33 @@ private:
      */
     const int color_ratio() const {
         return FftProc::freq_interval()/ldata::pal_size_32;
+    }
+
+    /**
+     * @brief
+     *
+     * @return const int
+     */
+    const int color_intervals() const {
+        return cmusic::ldata::col_intervals_count;
+    }
+
+    /**
+     * @brief
+     *
+     * @return const uint32_t*
+     */
+    virtual const uint32_t* colors_blocks(){
+        return ldata::colors_blocks_html;
+    }
+
+    /**
+     * @brief
+     *
+     * @return const uint32_t
+     */
+    virtual const uint32_t black_color() {
+        return ldata::color_black;
     }
 
     bool _busy = false;

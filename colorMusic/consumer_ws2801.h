@@ -165,8 +165,22 @@ public:
         SPI_Off();
     }
 
+    /**
+     * @brief
+     *
+     * @return const std::string
+     */
     virtual const std::string to_string() override {
         return std::string("CmrWS2801");
+    }
+
+    /**
+     * @brief
+     *
+     * @return const uint32_t*
+     */
+    virtual const uint32_t* colors_blocks()override {
+        return ldata::colors_blocks_leds;
     }
 
 

@@ -95,12 +95,14 @@ const uint32_t pal_size_block = 28; //24;
 const uint32_t pal_colors_per_block = 2;
 
 //from light to dark
-/*
-const uint32_t colors_blocks[24] = {
+
+const uint32_t colors_blocks_html[pal_size_block] = {
     0x640DC6, 0x7809F7,     //violet
     0x1A4AED, 0x1476EC,     //blue 1
     0x2C9BEB, 0x1599F8,     //light blue
     0x28ADD1, 0x38C8EE,
+    0x28ADD1, 0x38C8EE,
+    0x20A505, 0x33DA87,     //green 1
     0x20A505, 0x33DA87,     //green 1
     0x3DE893, 0x31F30B,     //green 2
     0x9DCF0C, 0xBAF510,     //green-yellow
@@ -110,11 +112,11 @@ const uint32_t colors_blocks[24] = {
     0xFA6E62, 0xFC1703,     //red 2
     0xB90DB7, 0xEE12EA      //magenta
 };
-*/
 
-const uint32_t colors_blocks[28] = {
-        0x150580, 0x1505B0,
-        0x300580, 0x3005B0,
+
+const uint32_t colors_blocks_leds[pal_size_block] = {
+    0x150580, 0x1505B0,
+    0x300580, 0x3005B0,
 	0x000080, 0x0000B0,
 	0x002080, 0x0020B0,
 	0x008000, 0x00B000,
