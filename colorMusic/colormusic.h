@@ -20,6 +20,7 @@
 #include "cmusicdata.h"
 #include "receiver.h"
 #include "sender.h"
+#include "colormusic_hw.h"
 
 namespace cmusic {
 
@@ -37,11 +38,14 @@ public:
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
 
-        if(cmusic::is_real_hardware())
-            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, 3);
+        if(cmusic::is_real_hardware()){
+            _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, 3);
+
+        }
         else{
-            _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false);
-            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  3);
+            _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
+            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, 3);
         }
     }
 
@@ -94,6 +98,8 @@ private:
     CrossDataPtr _data;
     std::shared_ptr<Receiver> _recv;
     std::shared_ptr<Sender> _sendr;
+
+    gpio_provider _gpio_provider;
 };
 
 }//namespace

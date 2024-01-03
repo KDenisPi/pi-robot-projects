@@ -48,19 +48,6 @@ public:
     CmrWS2801(const int leds_count, const bool extend_data = false, const int skip_loops = -1) : Consumer(leds_count, extend_data, skip_loops)
     {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
-
-        pspi_cfg cfg;
-        cfg.speed[0] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
-        cfg.speed[1] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
-
-        g_prov = std::make_shared<pirobot::gpio::GpioProviderSimple>();
-        logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " GPIO Provider: " + g_prov->printConfig());
-
-        p_gpio_ce0 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE0, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
-        p_gpio_ce1 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE1, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
-
-        p_pspi = std::make_shared<pirobot::spi::SPI>(std::string("PI_SPI"), cfg, p_gpio_ce0, p_gpio_ce1);
-
         ledData = LedData(new std::vector<uint8_t>(leds_count*3, 0x00));
     }
 
@@ -71,12 +58,36 @@ public:
     virtual ~CmrWS2801() {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
 
+        hardware_release();
+    }
+
+    /**
+     * @brief
+     *
+     * @param g_prov
+     */
+    virtual void hardware_init(const gpio_provider& g_prov) override {
+        pspi_cfg cfg;
+        cfg.speed[0] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
+        cfg.speed[1] = pirobot::spi::SPI_SPEED::MHZ_2; // 2 Mhz
+
+        logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " GPIO Provider: " + g_prov->printConfig());
+
+        p_gpio_ce0 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE0, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
+        p_gpio_ce1 = std::make_shared<pirobot::gpio::Gpio>(GPIO_CE1, pirobot::gpio::GPIO_MODE::OUT, g_prov, pirobot::gpio::PULL_MODE::PULL_OFF, pirobot::gpio::GPIO_EDGE_LEVEL::EDGE_NONE);
+
+        p_pspi = std::make_shared<pirobot::spi::SPI>(std::string("PI_SPI"), cfg, p_gpio_ce0, p_gpio_ce1);
+    }
+
+    /**
+     * @brief
+     *
+     */
+    virtual void hardware_release() override {
         p_pspi.reset();
 
         p_gpio_ce1.reset();
         p_gpio_ce0.reset();
-
-        g_prov.reset();
     }
 
     /**
@@ -191,7 +202,6 @@ private:
             ledData->at(i) = 0x00;
     }
 
-    provider g_prov;
     gpio p_gpio_ce0;
     gpio p_gpio_ce1;
     pspi p_pspi;

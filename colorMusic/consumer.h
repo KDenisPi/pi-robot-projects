@@ -18,6 +18,7 @@
 
 #include "logger.h"
 #include "Threaded.h"
+#include "colormusic_hw.h"
 
 namespace cmusic {
 
@@ -219,6 +220,23 @@ public:
     }
 
     virtual const std::string to_string() = 0;
+
+    /**
+     * @brief
+     *
+     * @param g_prov
+     */
+    virtual void hardware_init(const gpio_provider& g_prov) {
+
+    }
+
+    /**
+     * @brief
+     *
+     */
+    virtual void hardware_release() {
+
+    }
 
 private:
     /**
