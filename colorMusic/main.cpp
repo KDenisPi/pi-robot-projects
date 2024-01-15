@@ -25,7 +25,7 @@ int main (int argc, char* argv[])
     logger::log_init("/var/log/pi-robot/cmusic_log");
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " cmusic");
 
-    int loop_skip = -1;
+    int loop_skip = 3;
     for(int i=0; i<argc; i++){
         if( std::string(argv[i]) == "--loop_skip"){
             if(i+1 < argc){
@@ -42,6 +42,7 @@ int main (int argc, char* argv[])
         }
     }
 
+    logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
     std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(argc==1 ? std::string() : std::string(argv[1]), loop_skip);
 
     if(cmusic->start()){
