@@ -31,7 +31,7 @@ public:
      *
      * @param filename
      */
-    ColorMusic(const std::string& filename){
+    ColorMusic(const std::string& filename, const int skip_loops = 3){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
 
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
@@ -40,12 +40,12 @@ public:
 
         if(cmusic::is_real_hardware()){
             _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
-            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, 3);
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops);
 
         }
         else{
             _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
-            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, 3);
+            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, skip_loops);
         }
     }
 
