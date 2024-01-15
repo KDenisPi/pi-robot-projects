@@ -130,9 +130,11 @@ public:
                 break;
             }
 
+            //std::cout << "Resv Index: " << rcv_index << std::endl;
             //update atomic value - start send thread
             p->_data->idx = rcv_index;
 
+            
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(e_time) + " Index: " + std::to_string(rcv_index));
 
             rcv_index = (rcv_index==1? 0 : 1);

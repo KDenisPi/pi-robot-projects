@@ -107,8 +107,11 @@ public:
             return false;
 
         if(is_skip_loop()){
+            //std::cout << "Skip data " << std::endl;
             return true;
         }
+
+        //std::cout << " Consumer input size: " << d_size << std::endl;
 
         bool trans = transformate_data(data, d_size, (uint32_t) pwr_avg);
         if(trans){
@@ -257,11 +260,13 @@ private:
                 _data[i] = data[i];
             }
 
+            //std::cout << "Trasformer Easy way" << std::endl;
             return true;
         }
 
         auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/3;};
 
+        //std::cout << "Trasformer full way" << std::endl;
         //
         if(d_size > items_count()){
             const uint32_t idx = d_size/items_count();   //group values by
@@ -313,25 +318,28 @@ private:
 
         //std::cout << " items_count: " << items_count() << std::endl;
 
-
-        const uint32_t* colors_blocks = colors_blocks;
+        const uint32_t* clr_blocks = colors_blocks();
         for(int i=0; i<items_count(); i++){
-            const auto freq_idx = get_interval_by_freq(std::get<1>(_data[i]));
-            const auto pwr_idx = get_color_by_power(std::get<0>(_data[i]), pwr_avg);
+            const auto val_0 = std::get<0>(_data[i]);
+            const auto val_1 = std::get<1>(_data[i]);
+
+            const auto freq_idx = get_interval_by_freq(val_1);
+            const auto pwr_idx = get_color_by_power(val_0, pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
 
+ 
             if(!is_extend_data()){ //easy way
-                const uint32_t clr_code = ( std::get<0>(_data[i]) == 0 ? black_color() : colors_blocks[color]);
-                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), clr_code);
+                const uint32_t clr_code = (val_0 == 0 ? black_color() : clr_blocks[color]);
+                _data[i] = std::make_tuple(val_0, val_1, clr_code);
                 continue;
             }
 
-            if(std::get<0>(_data[i]) > 0){
+            if(val_0 > 0){
                 freq_count[freq_idx*2 + pwr_idx]++;
                 j++;
             }
             else{
-                _data[i] = std::make_tuple(std::get<0>(_data[i]), std::get<1>(_data[i]), black_color());  //case when we do not have any values
+                _data[i] = std::make_tuple(val_0, val_1, black_color());  //case when we do not have any values
             }
 
             //std::cout << "i: " << i << " Fst: " << std::dec << std::get<0>(_data[i]) << " Scd: " << std::dec << std::get<1>(_data[i]) << " Thrd: 0x" << std::hex << std::get<2>(_data[i]) << std::endl;
@@ -379,7 +387,7 @@ private:
                 color = (i/2)*ldata::pal_colors_per_block + pwr_idx;
 
                 for(int k=0; k<(freq_count[i]*items_per_freq); k++){
-                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), clr_blocks[color]);
                     //_data[i_idx] = std::make_tuple(freq_count[i], i, ldata::colors_blocks[color]);
                     i_idx++;
                 }
@@ -388,7 +396,7 @@ private:
 
             if(color >= 0 && (i_idx < items_count()) ){
                 while(i_idx < items_count()){
-                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), colors_blocks[color]);
+                    _data[i_idx] = std::make_tuple(std::get<0>(_data[i_idx]), std::get<1>(_data[i_idx]), clr_blocks[color]);
                     //_data[i_idx] = std::make_tuple(j, items_per_freq, ldata::colors_blocks[color]);
                     i_idx++;
                 }

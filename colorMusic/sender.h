@@ -121,6 +121,8 @@ public:
 
             i_idx = p->_data->idx;
 
+            //std::cout << "Snd Index: " << i_idx << std::endl;
+
             logger::log(logger::LLOG::DEBUG, "sendr", std::string(__func__) + " Data index: " + std::to_string(i_idx) + " or finish " + std::to_string(p->is_stop_signal()));
 
             if(p->is_stop_signal()){
