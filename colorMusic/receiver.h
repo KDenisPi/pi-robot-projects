@@ -40,7 +40,9 @@ public:
     Receiver(const CrossDataPtr& data, const std::string& filename = "") : _filename(filename), _data(data) {
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source: " + filename);
         _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY|O_SYNC));
-        logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Sourec FD: " + std::to_string(_fd));
+        logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source FD: " + std::to_string(_fd));
+
+        std::cout << "File descriptor: " << _fd << std::endl;
     }
 
 

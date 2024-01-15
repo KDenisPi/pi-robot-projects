@@ -26,24 +26,32 @@ int main (int argc, char* argv[])
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " cmusic");
 
     int loop_skip = 3;
-    for(int i=0; i<argc; i++){
-        if( std::string(argv[i]) == "--loop_skip"){
+    std::string filename;
+    for(int i=1; i<argc; i++){
+        const std::string prm = std::string(argv[i]);
+        if( prm == "--loop_skip"){
             if(i+1 < argc){
                 try{
                     const int val = std::stoi(std::string(argv[i+1]));
-                    if(val>0 and val<6)
+                    if(val>=0 and val<6)
                         loop_skip = val;
                 }
                 catch(const std::invalid_argument& ia){
                     std::clog << " Invalid value for loop skip counter: " << std::string(argv[i+1]) << std::endl;
                 }
-                break;
+            }
+        }
+        if(prm == "--file"){
+            if(i+1 < argc){
+              filename  = std::string(argv[i+1]);
             }
         }
     }
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
-    std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(argc==1 ? std::string() : std::string(argv[1]), loop_skip);
+    std::clog << "Loops skip " << loop_skip << " Filename: " << filename << std::endl;
+
+    std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip);
 
     if(cmusic->start()){
         cmusic->wait();
