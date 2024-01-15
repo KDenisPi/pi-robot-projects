@@ -208,7 +208,7 @@ public:
 private:
     static const int _freq = 44100;     //Base frequency. Constant (samples/sec) - 40000
 
-    static const int _chunk_interval = 50; //milliseconds
+    static const int _chunk_interval = 40; //milliseconds
 
     // We will try to process by 50ms chunk
     // 50ms = 1/20 sec; 40000 sm/sec * 0.05 = 2000

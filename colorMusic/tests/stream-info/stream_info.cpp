@@ -33,7 +33,7 @@ int main (int argc, char* argv[])
     std::cout << "Frequency:  " << fft_proc->freqency() << std::endl;
     std::cout << "Chunk size: " << fft_proc->chunk_size() << std::endl;
     std::cout << "Freq precision : " << fft_proc->freq_precision() << std::endl;
-    std::cout << "Chunk interval : " << fft_proc->chunk_interval() << std::endl;
+    std::cout << "Chunk interval : " << fft_proc->chunk_interval() << "ms [" <<  (int)(1000/fft_proc->chunk_interval()) << "Hz]"<< std::endl;
     std::cout << "Freq per Koef  : " << fft_proc->freq_per_coefficient() << std::endl;
     std::cout << "Chunks per MrI : " << fft_proc->chunks_to_measurement_interval() << std::endl;
 
