@@ -264,7 +264,8 @@ private:
             return true;
         }
 
-        auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/3;};
+        //TDOD: probably to make it configured
+        auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/2;};
 
         //std::cout << "Trasformer full way" << std::endl;
         //
