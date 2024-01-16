@@ -25,10 +25,16 @@ int main (int argc, char* argv[])
     logger::log_init("/var/log/pi-robot/cmusic_log");
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " cmusic");
 
+    //
+    //Command line parameters
+    //
     int loop_skip = 3;
     std::string filename;
+    bool dbg_out = false;
     for(int i=1; i<argc; i++){
         const std::string prm = std::string(argv[i]);
+
+        //define how many measurements shoud be ignored for ooutput
         if( prm == "--loop_skip"){
             if(i+1 < argc){
                 try{
@@ -41,17 +47,29 @@ int main (int argc, char* argv[])
                 }
             }
         }
+
+        //input filename
         if(prm == "--file"){
             if(i+1 < argc){
               filename  = std::string(argv[i+1]);
             }
         }
+
+        //include HTML output
+        if(prm == "--html"){
+            dbg_out = true;
+        }
+
+        if(prm == "--help" || prm == "-h"){
+            std::cout << "cmusicd [--file input_file.raw] [--loop_skip n] [--html] [--help]" << std::endl;
+            exit(EXIT_SUCCESS);
+        }
     }
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
-    std::clog << "Loops skip " << loop_skip << " Filename: " << filename << std::endl;
+    std::clog << "Loops skip " << loop_skip << " Filename: " << filename << " Use HTML: " << dbg_out << std::endl;
 
-    std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip);
+    std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out);
 
     if(cmusic->start()){
         cmusic->wait();

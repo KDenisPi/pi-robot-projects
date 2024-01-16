@@ -29,9 +29,11 @@ public:
     /**
      * @brief Construct a new Color Music object
      *
-     * @param filename
+     * @param filename - filename for data source, if empty standard input is used
+     * @param skip_loops - number of loops should skipped for output (from 0 [out all] to 6 [out one of 6])
+     * @param dbg_out - make ouput created for test purposes (to HTML files) for reasl hardware too
      */
-    ColorMusic(const std::string& filename, const int skip_loops = 3){
+    ColorMusic(const std::string& filename, const int skip_loops = 3, const bool dbg_out = false){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
 
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
@@ -43,7 +45,8 @@ public:
             _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops);
 
         }
-        else{
+
+        if(!cmusic::is_real_hardware() || dbg_out){
             _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
             _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, skip_loops);
         }
