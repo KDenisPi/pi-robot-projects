@@ -1,6 +1,6 @@
 /**
  * @file consumer_ws2801.h
- * @author your name (you@domain.com)
+ * @author Denis Kudia (dkudja@gmail.com)
  * @brief
  * @version 0.1
  * @date 2023-11-29

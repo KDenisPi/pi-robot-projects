@@ -1,6 +1,6 @@
 /**
  * @file receiver.h
- * @author your name (you@domain.com)
+ * @author Denis Kudia (dkudja@gmail.com)
  * @brief
  * @version 0.1
  * @date 2022-11-04
@@ -134,7 +134,7 @@ public:
             //update atomic value - start send thread
             p->_data->idx = rcv_index;
 
-            
+
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(e_time) + " Index: " + std::to_string(rcv_index));
 
             rcv_index = (rcv_index==1? 0 : 1);

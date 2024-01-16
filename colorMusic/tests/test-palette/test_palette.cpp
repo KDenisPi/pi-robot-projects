@@ -1,6 +1,6 @@
 /**
  * @file test_palette.cpp
- * @author your name (you@domain.com)
+ * @author Denis Kudia (dkudja@gmail.com)
  * @brief
  * @version 0.1
  * @date 2023-12-07

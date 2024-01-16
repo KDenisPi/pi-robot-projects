@@ -1,6 +1,6 @@
 /**
  * @file colors.h
- * @author your name (you@domain.com)
+ * @author Denis Kudia (dkudja@gmail.com)
  * @brief
  * @version 0.1
  * @date 2022-11-02

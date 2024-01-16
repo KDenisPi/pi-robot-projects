@@ -1,6 +1,6 @@
 /**
  * @file consumer.h
- * @author your name (you@domain.com)
+ * @author Denis Kudia (dkudja@gmail.com)
  * @brief  Consumer base class. Transform general data to view can be used for different ways.
  * @version 0.1
  * @date 2023-10-20
@@ -328,7 +328,7 @@ private:
             const auto pwr_idx = get_color_by_power(val_0, pwr_avg);
             const auto color = freq_idx*ldata::pal_colors_per_block + pwr_idx;
 
- 
+
             if(!is_extend_data()){ //easy way
                 const uint32_t clr_code = (val_0 == 0 ? black_color() : clr_blocks[color]);
                 _data[i] = std::make_tuple(val_0, val_1, clr_code);
