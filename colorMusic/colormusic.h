@@ -89,6 +89,10 @@ public:
         return _recv->start();
     }
 
+    void stop_receiver(){
+        _recv->set_stop_signal(true);
+    }
+
     /**
      * @brief Wait untill we have something to process
      *
@@ -104,6 +108,8 @@ private:
 
     gpio_provider _gpio_provider;
 };
+
+std::shared_ptr<cmusic::ColorMusic> cmusic;
 
 }//namespace
 #endif

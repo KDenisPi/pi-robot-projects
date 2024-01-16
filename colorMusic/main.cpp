@@ -16,14 +16,46 @@
 #include "logger.h"
 #include "colormusic.h"
 
+void sigHandlerCtrlc(int sign);
+
 using namespace std;
+
+/**
+ * @brief
+ *
+ * @param sign
+ */
+void sigHandlerCtrlc(int sign){
+
+    if(sign == SIGTERM || sign == SIGQUIT){
+        std::cout << "Signal detected " << sign << std::endl;
+
+        if(cmusic::cmusic)
+            cmusic::cmusic->stop_receiver();
+    }
+}
 
 int main (int argc, char* argv[])
 {
     bool success = true;
 
     logger::log_init("/var/log/pi-robot/cmusic_log");
+    logger::set_level(logger::LLOG::INFO);
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " cmusic");
+
+
+    if(signal(SIGTERM, sigHandlerCtrlc) == SIG_ERR){
+        _exit(EXIT_FAILURE);
+    }
+
+    if(signal(SIGQUIT, sigHandlerCtrlc) == SIG_ERR){
+        _exit(EXIT_FAILURE);
+    }
+
+    if(signal(SIGINT, sigHandlerCtrlc) == SIG_ERR){
+        _exit(EXIT_FAILURE);
+    }
+
 
     //
     //Command line parameters
@@ -69,15 +101,19 @@ int main (int argc, char* argv[])
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
     std::clog << "Loops skip " << loop_skip << " Filename: " << filename << " Use HTML: " << dbg_out << std::endl;
 
-    std::shared_ptr<cmusic::ColorMusic> cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out);
+    cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out);
 
-    if(cmusic->start()){
-        cmusic->wait();
+    if(cmusic::cmusic->start()){
+        cmusic::cmusic->wait();
     }
 
-    cmusic->stop();
+    cmusic::cmusic->stop();
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " finished");
+
+    logger::finish();
+    logger::release();
+
     std::clog << "Finished " << success << std::endl;
     exit( (success ? EXIT_SUCCESS : EXIT_FAILURE));
 }
