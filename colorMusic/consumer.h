@@ -78,7 +78,12 @@ public:
      */
     virtual bool start() = 0;
 
-
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     const bool is_skip_loop() {
         if(skip_loops() <= 0)
             return false;
@@ -173,14 +178,30 @@ public:
         return _extend_data;
     }
 
+    /**
+     * @brief Set the entend data object
+     *
+     * @param extend_data
+     */
     void set_entend_data(const bool extend_data){
         _extend_data = extend_data;
     }
 
+    /**
+     * @brief
+     *
+     * @return const int
+     */
     const int items_count() const {
         return _items_count;
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     virtual const bool is_ready(){
         return true;
     }
@@ -218,6 +239,11 @@ public:
         return (power < quoter ? 0 : 1);
     }
 
+    /**
+     * @brief
+     *
+     * @return const int
+     */
     const int skip_loops() const {
         return _skip_loops;
     }
@@ -265,9 +291,9 @@ private:
         }
 
         //TDOD: probably to make it configured
-        auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/2;};
+        constexpr const auto pw_ignore_below = [] (const int pwr_level) { return pwr_level/2;};
 
-        //std::cout << "Trasformer full way" << std::endl;
+        //std::cout << " Ign. below: " << pw_ignore_below(average_level) << std::endl;
         //
         if(d_size > items_count()){
             const uint32_t idx = d_size/items_count();   //group values by
@@ -282,7 +308,7 @@ private:
                 }
 
                 //Ignore values less than some power value - 1/3 of average level now
-                if(std::get<0>(val) >= pw_ignore_below(average_level))
+                if(std::get<0>(val) > pw_ignore_below(average_level))
                     _data[j] =  val;
                 else
                     _data[j] = std::make_tuple(0, std::get<1>(val), 0);

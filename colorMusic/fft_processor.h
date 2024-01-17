@@ -142,7 +142,9 @@ public:
         fftw_destroy_plan(my_plan);
 
         tp_end = std::chrono::system_clock::now();
-        auto e_time = std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count();
+        const auto e_time = std::chrono::duration_cast<std::chrono::milliseconds>(tp_end - tp_start).count();
+
+        logger::log(logger::LLOG::DEBUG, "fftp", std::string(__func__) + " Power correction: " + std::to_string(power_correction()) + " min: " + std::to_string(val_min) + " max: " + std::to_string(val_max));
         logger::log(logger::LLOG::DEBUG, "fftp", std::string(__func__) + " Processed for (ms): " + std::to_string(e_time) + " No Empty: " + std::to_string(not_empty_counter));
 
         return true;
