@@ -31,6 +31,12 @@ using VConsm = std::vector<Consm>;
 
 class Sender : public piutils::Threaded {
 public:
+    /**
+     * @brief Construct a new Sender object
+     *
+     * @param data
+     * @param sleds
+     */
     Sender(const CrossDataPtr& data, const int sleds=63) : _data(data){
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Data size: " + std::to_string(FftProc::freq_interval()));
 

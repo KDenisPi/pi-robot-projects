@@ -33,6 +33,10 @@ using FftComplex = std::unique_ptr<fftw_complex, std::function<void(fftw_complex
 
 class FftProc {
 public:
+    /**
+     * @brief Construct a new Fft Proc object
+     *
+     */
     FftProc() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
 
@@ -45,6 +49,10 @@ public:
         logger::log(logger::LLOG::INFO, "fftp", std::string(__func__) + " Chunks per interval: " + std::to_string(chunks_to_mitv));
     }
 
+    /**
+     * @brief Destroy the Fft Proc object
+     *
+     */
     virtual ~FftProc() {
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__));
     }
@@ -90,10 +98,6 @@ public:
         set_power_correction(0.0);
         for(j=0; j<chunk_size()/2; j++){
 
-            /*
-            1. Ignore empty value
-            2. Ignore negative values (?)
-            */
             const fftw_complex* cpx = buff_out.get();
             if(cpx[j][0]!=0 || cpx[j][1]!=0){
                 const double val = 10*log10(cpx[j][0]*cpx[j][0]+cpx[j][1]*cpx[j][1]);
@@ -103,8 +107,8 @@ public:
                 if(val > val_max)
                     val_max = val;
 
-                if(j==0 && val>0){
-                    set_power_correction(val);
+                if(j==0){
+                    set_power_correction((val >= 0 ? val : 0));
                 }
 
                 if(val+power_correction() > res)
@@ -117,8 +121,6 @@ public:
                     if(res>0){
                         data_out[i_idx-1] = std::make_tuple((uint32_t)round(res), (uint32_t)(j*freq_per_coefficient()), (uint32_t)0);
                         not_empty_counter++;
-
-                        //std::cout << "x: " << i_idx-1 << " Fst: " << std::dec << std::get<0>(data_out[i_idx-1]) << " Scd: " << std::dec << std::get<1>(data_out[i_idx-1]) << " Thrd: 0x" << std::hex << std::get<2>(data_out[i_idx-1]) << std::endl;
                     }
                     else
                         data_out[i_idx-1] = std::make_tuple((uint32_t)0, (uint32_t)(j*freq_per_coefficient()), (uint32_t)0);
@@ -233,8 +235,8 @@ private:
     your frequency spacing is 44100 / 256 = 172 Hz (approximately)
 
 
-    My case: 40000 samples/sec, the number of points in FFT is 2000
-    40000/2000 = 20 Hz
+    My case: 44100 samples/sec, the number of points in FFT is 2000
+    44100/2000 ~ 20 Hz
 
     The first coefficient in your array will be the 0 frequency coefficient. That is basically the average power level
     for all frequencies. The rest of your coefficients will count up from 0 in multiples of 172 Hz until you get to 128.

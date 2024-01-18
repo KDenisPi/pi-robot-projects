@@ -43,15 +43,21 @@ public:
         if(cmusic::is_real_hardware()){
             _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
             _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops);
-
         }
 
         if(!cmusic::is_real_hardware() || dbg_out){
+            logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + "Bdg out: " + std::to_string(dbg_out));
+
             _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
             _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, skip_loops);
         }
     }
 
+    /**
+     * @brief
+     *
+     * @return const int
+     */
     const int ws2801_leds() const {
         return 63;
     }
@@ -89,6 +95,10 @@ public:
         return _recv->start();
     }
 
+    /**
+     * @brief
+     *
+     */
     void stop_receiver(){
         _recv->set_stop_signal(true);
     }

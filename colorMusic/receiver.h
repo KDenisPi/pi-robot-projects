@@ -32,11 +32,17 @@
 namespace cmusic {
 
 /*
-arecord --file-type raw --channels=1 --rate=40000 --format=FLOAT_LE -D pulse  --buffer-size=0
+arecord --file-type raw --channels=1 --rate=40000 --format=FLOAT_LE -D plughw --buffer-size=0
 */
 
 class Receiver : public piutils::Threaded {
 public:
+    /**
+     * @brief Construct a new Receiver object
+     *
+     * @param data
+     * @param filename
+     */
     Receiver(const CrossDataPtr& data, const std::string& filename = "") : _filename(filename), _data(data) {
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Source: " + filename);
         _fd = (filename.empty() ? dup(STDIN_FILENO) : open(filename.c_str(), O_RDONLY|O_SYNC));
@@ -45,7 +51,10 @@ public:
         std::cout << "File descriptor: " << _fd << std::endl;
     }
 
-
+    /**
+     * @brief Destroy the Receiver object
+     *
+     */
     virtual ~Receiver(){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
 
@@ -55,16 +64,30 @@ public:
         }
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     bool start(){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         return piutils::Threaded::start<Receiver>(this);
     }
 
+    /**
+     * @brief
+     *
+     */
     void stop(){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         piutils::Threaded::stop();
     }
 
+    /**
+     * @brief
+     *
+     */
     void wait(){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__));
         piutils::Threaded::wait();
@@ -86,6 +109,7 @@ public:
      */
     static void worker(Receiver* p){
         logger::log(logger::LLOG::INFO, "recv", std::string(__func__) + " Started: " + std::to_string(p->fd()));
+
         if(!p->is_ready()){
             logger::log(logger::LLOG::ERROR, "recv", std::string(__func__) + " Finished. Wrong file descriptior.");
             return;
@@ -102,8 +126,10 @@ public:
         std::chrono::time_point<std::chrono::system_clock> tp_start, tp_end;
 
         while(!p->is_stop_signal()){
+
             p->_data->clear(rcv_index);
             auto rdata = p->_data->get(rcv_index);
+
             tp_start = std::chrono::system_clock::now();
             for(int i=0; i < FftProc::chunk_size(); i++){
                 size_t read_bytes = read(p->fd(), buff.ch, sizeof(buff.fl));
@@ -130,10 +156,8 @@ public:
                 break;
             }
 
-            //std::cout << "Resv Index: " << rcv_index << std::endl;
             //update atomic value - start send thread
             p->_data->idx = rcv_index;
-
 
             logger::log(logger::LLOG::DEBUG, "recv", std::string(__func__) + " Processed (ms): " + std::to_string(e_time) + " Index: " + std::to_string(rcv_index));
 
@@ -205,6 +229,12 @@ public:
         return (_fd>=0);
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
     const bool if_stdin() const {
         return _filename.empty();
     }
@@ -214,7 +244,6 @@ public:
 private:
     int _fd;
     std::string _filename;
-
 };
 
 }//namespace
