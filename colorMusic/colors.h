@@ -87,7 +87,7 @@ Intervals
 5 - [12KHz - 15KHz]
 6 - [15KHz - 20KHz]
 */
-const int col_intervals[14] = {100, 250, 300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 6000, 9000, 22000};
+const int col_intervals[14] = {200, 300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 6000, 7000, 9000, 22000};
 
 const int col_intervals_count = sizeof(cmusic::ldata::col_intervals)/sizeof(int);
 
@@ -129,6 +129,23 @@ const uint32_t colors_blocks_leds[pal_size_block] = {
 	0x800010, 0xB00010,
 	0x800000, 0xB00000,
 	0x800040, 0xB00040
+};
+
+const uint32_t colors_blocks_leds_rbg_only[pal_size_block] = {
+	0x000070, 0x0000D0,
+	0x000050, 0x0000B0,
+	0x000030, 0x000090,
+	0x000010, 0x000070,
+
+	0x007000, 0x00D000,
+	0x005000, 0x00B000,
+	0x003000, 0x009000,
+	0x001000, 0x007000,
+
+	0x700000, 0xD00000,
+	0x500000, 0xB00000,
+	0x300000, 0x900000,
+	0x100000, 0x700000
 };
 
 const uint32_t color_black = 0x000000;

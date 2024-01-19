@@ -190,13 +190,18 @@ public:
      *
      * @return const uint32_t*
      */
-    virtual const uint32_t* colors_blocks()override {
+    virtual const uint32_t* colors_blocks() override {
         return ldata::colors_blocks_leds;
+        //return ldata::colors_blocks_leds_rbg_only
     }
 
 
 private:
 
+    /**
+     * @brief
+     *
+     */
     void clear_data(){
           for(int i=0;  i<ledData->size(); i++)
             ledData->at(i) = 0x00;
