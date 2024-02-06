@@ -46,7 +46,7 @@ public:
         }
 
         if(!cmusic::is_real_hardware() || dbg_out){
-            logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + "Bdg out: " + std::to_string(dbg_out));
+            logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + "Debug output: " + std::to_string(dbg_out));
 
             _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
             _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, skip_loops);

@@ -114,7 +114,7 @@ int main (int argc, char* argv[])
     }
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
-    std::clog << "Loops skip " << loop_skip << " Filename: " << filename << " Use HTML: " << dbg_out << std::endl;
+    std::clog << "Skip loops for out: " << loop_skip << " Filename: " << filename << " Use HTML (dbg): " << dbg_out << " Palette idx: " << palidx << std::endl;
 
     cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out, palidx);
 
