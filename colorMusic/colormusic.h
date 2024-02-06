@@ -33,7 +33,7 @@ public:
      * @param skip_loops - number of loops should skipped for output (from 0 [out all] to 6 [out one of 6])
      * @param dbg_out - make ouput created for test purposes (to HTML files) for reasl hardware too
      */
-    ColorMusic(const std::string& filename, const int skip_loops = 3, const bool dbg_out = false){
+    ColorMusic(const std::string& filename, const int skip_loops = 3, const bool dbg_out = false, const int pal_index = 0){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
 
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
@@ -42,7 +42,7 @@ public:
 
         if(cmusic::is_real_hardware()){
             _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
-            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops);
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops, pal_index);
         }
 
         if(!cmusic::is_real_hardware() || dbg_out){

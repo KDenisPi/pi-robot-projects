@@ -31,7 +31,7 @@ public:
      * @param rdir
      */
     CmrHtml(const int items_count, const bool extend_data = false, const int skip_loops = -1, const int ln_pfile = 200, const std::string rdir = "./")
-        : Consumer(items_count, extend_data, skip_loops), _max_lines_per_file(ln_pfile), _root_dir(rdir){
+        : Consumer(items_count, extend_data, skip_loops, 0), _max_lines_per_file(ln_pfile), _root_dir(rdir){
 
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__));
         open(0);

@@ -17,6 +17,7 @@
 #include "colormusic.h"
 
 void sigHandlerCtrlc(int sign);
+int  get_int_value(const char* prm_val, const int val_min, const int val_max, const int val_def);
 
 using namespace std;
 
@@ -32,6 +33,20 @@ void sigHandlerCtrlc(int sign){
 
         if(cmusic::cmusic)
             cmusic::cmusic->stop_receiver();
+    }
+}
+
+int  get_int_value(const char* prm_val, const int val_min, const int val_max, const int val_def){
+    try{
+        const int val = std::stoi(std::string(prm_val));
+        if(val>=val_min and val<val_max)
+            return val;
+
+        return val_def;
+    }
+    catch(const std::invalid_argument& ia){
+        std::clog << " Invalid value for loop skip counter: " << std::string(prm_val) << std::endl;
+        _exit(EXIT_FAILURE);
     }
 }
 
@@ -60,7 +75,7 @@ int main (int argc, char* argv[])
     //
     //Command line parameters
     //
-    int loop_skip = 3;
+    int loop_skip = 3, palidx = 0;
     std::string filename;
     bool dbg_out = false;
     for(int i=1; i<argc; i++){
@@ -69,14 +84,14 @@ int main (int argc, char* argv[])
         //define how many measurements shoud be ignored for ooutput
         if( prm == "--loop_skip"){
             if(i+1 < argc){
-                try{
-                    const int val = std::stoi(std::string(argv[i+1]));
-                    if(val>=0 and val<6)
-                        loop_skip = val;
-                }
-                catch(const std::invalid_argument& ia){
-                    std::clog << " Invalid value for loop skip counter: " << std::string(argv[i+1]) << std::endl;
-                }
+                loop_skip = get_int_value(argv[i+1], 0, 6, 3);
+            }
+        }
+
+        //select another palette for output
+        if( prm == "--palidx"){
+            if(i+1 < argc){
+                palidx = get_int_value(argv[i+1], 0, 1, 0);
             }
         }
 
@@ -93,7 +108,7 @@ int main (int argc, char* argv[])
         }
 
         if(prm == "--help" || prm == "-h"){
-            std::cout << "cmusicd [--file input_file.raw] [--loop_skip n] [--html] [--help]" << std::endl;
+            std::cout << "cmusicd [--file input_file.raw] [--loop_skip n] [--html] [--help] [--palidx n]" << std::endl;
             exit(EXIT_SUCCESS);
         }
     }
@@ -101,7 +116,7 @@ int main (int argc, char* argv[])
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
     std::clog << "Loops skip " << loop_skip << " Filename: " << filename << " Use HTML: " << dbg_out << std::endl;
 
-    cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out);
+    cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out, palidx);
 
     if(cmusic::cmusic->start()){
         cmusic::cmusic->wait();

@@ -37,11 +37,14 @@ public:
      * @param extend_data
      * @param skip_loops
      */
-    Consumer(const int items_count, const bool extend_data, const int skip_loops = -1) : _items_count(items_count), _extend_data(extend_data), _skip_loops(skip_loops) {
+    Consumer(const int items_count, const bool extend_data, const int skip_loops = -1, const int pal_index = 0)
+    : _items_count(items_count), _extend_data(extend_data), _skip_loops(skip_loops) {
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__) + " Items count: " + std::to_string(items_count) + " Extend: " + std::to_string(extend_data));
 
         assert(items_count > 0 && items_count <1000);
         _data = OutData(new MeasData[_items_count]);
+
+        set_palette_idx(pal_index);
     }
 
     /**
@@ -472,6 +475,24 @@ private:
         return ldata::color_black;
     }
 
+    /**
+     * @brief Get the palette idx object
+     *
+     * @return const int
+     */
+    const int get_palette_idx() const {
+        return palette_index;
+    }
+
+    /**
+     * @brief Set the palette idx object
+     *
+     * @param pal_idx
+     */
+    virtual void set_palette_idx(const int pal_idx = 0){
+        palette_index = 0;
+    }
+
     bool _busy = false;
     bool _extend_data = false;
 
@@ -481,6 +502,8 @@ protected:
     int _skip_loops;
 
     int _loop_counter = -1;
+
+    int palette_index = 0;
 
 };
 
