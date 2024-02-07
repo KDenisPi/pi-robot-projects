@@ -40,6 +40,8 @@ public:
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
 
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + " SLoops" + std::to_string(skip_loops) + " PIdx: " + std::to_string(pal_index));
+
         if(cmusic::is_real_hardware()){
             _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
             _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops, pal_index);

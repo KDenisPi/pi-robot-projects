@@ -50,6 +50,8 @@ public:
     {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
         ledData = LedData(new std::vector<uint8_t>(leds_count*3, 0x00));
+
+        set_palette_idx(pal_index);
     }
 
     /**
@@ -199,6 +201,7 @@ public:
     }
 
     virtual void set_palette_idx(const int pal_idx = 0) override {
+        logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " PIdx: " + std::to_string(pal_idx));
         if(pal_idx == 0 || pal_idx == 1)
             palette_index = pal_idx;
     }
