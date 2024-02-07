@@ -39,13 +39,13 @@ void sigHandlerCtrlc(int sign){
 int  get_int_value(const char* prm_val, const int val_min, const int val_max, const int val_def){
     try{
         const int val = std::stoi(std::string(prm_val));
-        if(val>=val_min and val<val_max)
+        if(val>=val_min && val<=val_max)
             return val;
 
         return val_def;
     }
     catch(const std::invalid_argument& ia){
-        std::clog << " Invalid value for loop skip counter: " << std::string(prm_val) << std::endl;
+        std::clog << " Invalid value for parameter: " << std::string(prm_val) << std::endl;
         _exit(EXIT_FAILURE);
     }
 }
