@@ -75,7 +75,7 @@ int main (int argc, char* argv[])
     //
     //Command line parameters
     //
-    int loop_skip = 3, palidx = 0;
+    int loop_skip = 3, palidx = 0, itms_shift = 0;
     std::string filename;
     bool dbg_out = false;
     for(int i=1; i<argc; i++){
@@ -95,6 +95,13 @@ int main (int argc, char* argv[])
             }
         }
 
+        //shift items before output
+        if( prm == "--shift"){
+            if(i+1 < argc){
+                itms_shift = get_int_value(argv[i+1], 1, 6, 0);
+            }
+        }
+
         //input filename
         if(prm == "--file"){
             if(i+1 < argc){
@@ -108,15 +115,17 @@ int main (int argc, char* argv[])
         }
 
         if(prm == "--help" || prm == "-h"){
-            std::cout << "cmusicd [--file input_file.raw] [--loop_skip n] [--html] [--help] [--palidx n]" << std::endl;
+            std::cout << "cmusicd [--file input_file.raw] [--loop_skip n] [--html] [--help] [--palidx n] [--shift n]" << std::endl;
             exit(EXIT_SUCCESS);
         }
     }
 
     logger::log(logger::LLOG::INFO, "main", std::string(__func__) + " loop skip: " + std::to_string(loop_skip));
-    std::clog << "Skip loops for out: " << loop_skip << " Filename: " << filename << " Use HTML (dbg): " << dbg_out << " Palette idx: " << palidx << std::endl;
+    std::clog << "Skip loops for out: " << loop_skip << " Filename: " << filename << " Use HTML (dbg): "
+        << dbg_out << " Palette idx: " << palidx << " Shift: " << itms_shift << std::endl;
 
-    cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, loop_skip, dbg_out, palidx);
+    cmusic::ConsumerSettings cs(loop_skip, palidx, itms_shift);
+    cmusic::cmusic = std::make_shared<cmusic::ColorMusic>(filename, cs, dbg_out);
 
     if(cmusic::cmusic->start()){
         cmusic::cmusic->wait();

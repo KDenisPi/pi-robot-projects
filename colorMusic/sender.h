@@ -52,10 +52,10 @@ public:
      * @param extend_data
      */
     template<class T>
-    void add_consumer(const int items_count, const bool extend_data, const gpio_provider& g_prov, const int skip_loops = -1, const int pal_index = 0){
-        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " SLoops" + std::to_string(skip_loops) + " PIdx: " + std::to_string(pal_index));
+    void add_consumer(const int items_count, const bool extend_data, const gpio_provider& g_prov, const ConsumerSettings& params){
+        logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + params.to_string());
 
-        consumers.push_back(std::make_shared<T>(items_count, extend_data, skip_loops, pal_index));
+        consumers.push_back(std::make_shared<T>(items_count, extend_data, params));
         consumers.back()->hardware_init(g_prov);
         logger::log(logger::LLOG::INFO, "sendr", std::string(__func__) + " Added consumer: " + consumers.back()->to_string() + " Items: " + std::to_string(consumers.back()->items_count())
             + " Consumers: " + std::to_string(consumers.size()));

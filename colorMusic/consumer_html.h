@@ -27,11 +27,12 @@ public:
     /**
      * @brief Construct a new Cmr Html object
      *
-     * @param ln_pfile
-     * @param rdir
+     * @param items_count
+     * @param extend_data
+     * @param params
      */
-    CmrHtml(const int items_count, const bool extend_data = false, const int skip_loops = -1, const int ln_pfile = 200, const std::string rdir = "./")
-        : Consumer(items_count, extend_data, skip_loops, 0), _max_lines_per_file(ln_pfile), _root_dir(rdir){
+    CmrHtml(const int items_count, const bool extend_data, const ConsumerSettings& params)
+        : Consumer(items_count, extend_data, params){
 
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__));
         open(0);
@@ -112,7 +113,7 @@ public:
 
         _line_count++;
 
-        if(_line_count>=_max_lines_per_file){
+        if(_line_count >= cs.lnpfile()){
             reopen();
         }
     }
@@ -128,7 +129,7 @@ private:
     */
     void open(const int part = 0){
 
-        const std::string fname = _root_dir + "colormusic_" + std::to_string(items_count()) + "_" + std::to_string(part) + ".html";
+        const std::string fname = cs.rdirect() + "colormusic_" + std::to_string(items_count()) + "_" + std::to_string(part) + ".html";
         logger::log(logger::LLOG::INFO, "CmrHtml", std::string(__func__) + " filename: " + fname);
 
         if(is_ready()){
@@ -179,8 +180,6 @@ private:
     }
 
     std::ofstream _fd;
-    int _max_lines_per_file = 200;  //maximum number lines per file
-    std::string _root_dir = "./";     //folder for file generating
 
     int _line_count = 0;
     int _part = 0;

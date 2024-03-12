@@ -24,6 +24,73 @@ namespace cmusic {
 
 using Tp = std::chrono::time_point<std::chrono::system_clock>;
 
+class ConsumerSettings {
+public:
+    ConsumerSettings() {}
+    ConsumerSettings(const int sl=3, const int pidx=0, const int sitms=0)
+        : skip_loops(sl), pal_index(pidx), sft_items(sitms) {}
+
+    /**
+     * @brief
+     *
+     * @return const std::string
+     */
+    const std::string to_string() const{
+        const std::string result = std::string("SLoops: ") + std::to_string(skip_loops) + " PIfx: " + std::to_string(pal_index) + " Shift: "+ std::to_string(sft_items);
+        return result;
+    }
+
+    /**
+     * @brief
+     *
+     * @param oth
+     * @return ConsumerSettings&
+     */
+    ConsumerSettings& operator=(const ConsumerSettings& oth){
+        this->pal_index = oth.pal_index;
+        this->sft_items = oth.sft_items;
+        this->skip_loops = this->skip_loops;
+        return *this;
+    }
+
+    const int skiplps() const {
+        return skip_loops;
+    }
+
+    const int pidx() const {
+        return pal_index;
+    }
+
+    const int shtitms() const {
+        return sft_items;
+    }
+
+    const int lnpfile() const {
+        return ln_pfile;
+    }
+
+    const std::string rdirect() const{
+        return rdir;
+    }
+
+    void set_pidx(const int pidx){
+        pal_index = pidx;
+    }
+
+    void set_sloops(const int sloops){
+        skip_loops = sloops;
+    }
+
+private:
+    int skip_loops = 3;     //skip number of input loops for output
+    int pal_index = 0;      //index of palette should be used for output
+    int sft_items = 0;      //number of items should we shift for output
+
+    int ln_pfile = 200;
+    std::string rdir = "./";
+};
+
+
 /**
  * @brief
  *
@@ -37,14 +104,12 @@ public:
      * @param extend_data
      * @param skip_loops
      */
-    Consumer(const int items_count, const bool extend_data, const int skip_loops = -1, const int pal_index = 0)
-    : _items_count(items_count), _extend_data(extend_data), _skip_loops(skip_loops) {
+    Consumer(const int items_count, const bool extend_data, const ConsumerSettings& params)
+    : _items_count(items_count), _extend_data(extend_data), cs(params) {
         logger::log(logger::LLOG::INFO, "consm", std::string(__func__) + " Items count: " + std::to_string(items_count) + " Extend: " + std::to_string(extend_data));
 
         assert(items_count > 0 && items_count <1000);
         _data = OutData(new MeasData[_items_count]);
-
-        set_palette_idx(pal_index);
     }
 
     /**
@@ -248,7 +313,7 @@ public:
      * @return const int
      */
     const int skip_loops() const {
-        return _skip_loops;
+        return cs.skiplps();
     }
 
     virtual const std::string to_string() = 0;
@@ -268,6 +333,24 @@ public:
      */
     virtual void hardware_release() {
 
+    }
+
+    /**
+     * @brief Get the palette idx object
+     *
+     * @return const int
+     */
+    const int get_palette_idx() const {
+        return cs.pidx();
+    }
+
+    /**
+     * @brief Get the shift items object
+     *
+     * @return const int
+     */
+    const int get_shift_items() const {
+        return cs.shtitms();
     }
 
 private:
@@ -435,6 +518,17 @@ private:
 
         }
 
+        //shift output to around
+        if(get_shift_items() != 0){
+            for(int itms=0; itms < get_shift_items(); itms++){
+                auto last_itm = _data[items_count()-1];
+                for(int idx=items_count()-2; idx<=0 ; idx--){
+                    _data[idx+1] = _data[idx];
+                }
+                _data[0] = last_itm;
+            }
+        }
+
         return true;
     }
 
@@ -476,21 +570,12 @@ private:
     }
 
     /**
-     * @brief Get the palette idx object
-     *
-     * @return const int
-     */
-    const int get_palette_idx() const {
-        return palette_index;
-    }
-
-    /**
      * @brief Set the palette idx object
      *
      * @param pal_idx
      */
     virtual void set_palette_idx(const int pal_idx = 0){
-        palette_index = 0;
+        cs.set_pidx(0);
     }
 
     bool _busy = false;
@@ -499,11 +584,10 @@ private:
 protected:
     int _items_count;      //number of output items supported by this consumer
     OutData _data;
-    int _skip_loops;
 
-    int _loop_counter = -1;
+    int _loop_counter = -1;     //loop countr
 
-    int palette_index = 0;
+    ConsumerSettings cs;
 
 };
 

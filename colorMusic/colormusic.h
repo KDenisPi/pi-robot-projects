@@ -24,6 +24,7 @@
 
 namespace cmusic {
 
+
 class ColorMusic{
 public:
     /**
@@ -33,25 +34,25 @@ public:
      * @param skip_loops - number of loops should skipped for output (from 0 [out all] to 6 [out one of 6])
      * @param dbg_out - make ouput created for test purposes (to HTML files) for reasl hardware too
      */
-    ColorMusic(const std::string& filename, const int skip_loops = 3, const bool dbg_out = false, const int pal_index = 0){
+    ColorMusic(const std::string& filename, const ConsumerSettings& params, const bool dbg_out = false){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
 
         _data = std::make_shared<CrossData>(FftProc::chunk_size()); //2000
         _recv = std::make_shared<Receiver>(_data, filename);
         _sendr = std::make_shared<Sender>(_data);
 
-        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + " SLoops" + std::to_string(skip_loops) + " PIdx: " + std::to_string(pal_index));
+        logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + params.to_string());
 
         if(cmusic::is_real_hardware()){
             _gpio_provider = std::make_shared<pirobot::gpio::GpioProviderSimple>();
-            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, skip_loops, pal_index);
+            _sendr->add_consumer<cmusic::CmrWS2801>(ws2801_leds(), true, _gpio_provider, params);
         }
 
         if(!cmusic::is_real_hardware() || dbg_out){
             logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__) + "Debug output: " + std::to_string(dbg_out));
 
-            _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider);
-            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, skip_loops);
+            _sendr->add_consumer<cmusic::CmrHtml>(FftProc::freq_interval(), false, _gpio_provider, params);
+            _sendr->add_consumer<cmusic::CmrHtml>(ws2801_leds(), true,  _gpio_provider, params);
         }
     }
 

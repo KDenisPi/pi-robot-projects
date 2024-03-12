@@ -45,13 +45,13 @@ public:
      *
      * @param leds_count
      */
-    CmrWS2801(const int leds_count, const bool extend_data = false, const int skip_loops = -1, const int pal_index = 0)
-        : Consumer(leds_count, extend_data, skip_loops, pal_index)
+    CmrWS2801(const int leds_count, const bool extend_data, const ConsumerSettings& params)
+        : Consumer(leds_count, extend_data, params)
     {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__));
         ledData = LedData(new std::vector<uint8_t>(leds_count*3, 0x00));
 
-        set_palette_idx(pal_index);
+        set_palette_idx(params.pidx());
     }
 
     /**
@@ -194,7 +194,7 @@ public:
      * @return const uint32_t*
      */
     virtual const uint32_t* colors_blocks() override {
-        if(palette_index == 1)
+        if(get_palette_idx() == 1)
             return ldata::colors_blocks_leds_rbg_only;
 
         return ldata::colors_blocks_leds;
@@ -203,7 +203,7 @@ public:
     virtual void set_palette_idx(const int pal_idx = 0) override {
         logger::log(logger::LLOG::INFO, "ws2801", std::string(__func__) + " PIdx: " + std::to_string(pal_idx));
         if(pal_idx == 0 || pal_idx == 1)
-            palette_index = pal_idx;
+            cs.set_pidx(pal_idx);
     }
 
 
