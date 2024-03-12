@@ -353,6 +353,16 @@ public:
         return cs.shtitms();
     }
 
+    /**
+     * @brief
+     *
+     * @return true
+     * @return false
+     */
+    virtual const bool is_support_shift() {
+        return false;
+    }
+
 private:
     /**
      * @brief Tranformate input data in depends on consumer parameters
@@ -519,7 +529,8 @@ private:
         }
 
         //shift output to around
-        if(get_shift_items() != 0){
+        //TODO: Copy not just the last value but all shift items
+        if(is_support_shift() && get_shift_items() != 0){
             for(int itms=0; itms < get_shift_items(); itms++){
                 auto last_itm = _data[items_count()-1];
                 for(int idx=items_count()-2; idx<=0 ; idx--){

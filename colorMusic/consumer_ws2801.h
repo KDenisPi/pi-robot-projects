@@ -206,7 +206,9 @@ public:
             cs.set_pidx(pal_idx);
     }
 
-
+    virtual const bool is_support_shift() override {
+        return true;
+    }
 
 private:
 
