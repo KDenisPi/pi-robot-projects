@@ -30,9 +30,9 @@ public:
     /**
      * @brief Construct a new Color Music object
      *
-     * @param filename - filename for data source, if empty standard input is used
-     * @param skip_loops - number of loops should skipped for output (from 0 [out all] to 6 [out one of 6])
-     * @param dbg_out - make ouput created for test purposes (to HTML files) for reasl hardware too
+     * @param filename
+     * @param params
+     * @param dbg_out
      */
     ColorMusic(const std::string& filename, const ConsumerSettings& params, const bool dbg_out = false){
         logger::log(logger::LLOG::INFO, "cmusic", std::string(__func__));
