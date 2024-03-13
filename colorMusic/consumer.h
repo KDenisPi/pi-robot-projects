@@ -531,11 +531,15 @@ private:
         //shift output to around
         //TODO: Copy not just the last value but all shift items
         if(is_support_shift() && get_shift_items() != 0){
-            for(int itms=0; itms < get_shift_items(); itms++){
+            const int shifts = get_items_to_shift();
+            //std::cout << " Shift: " << shifts  <<  std::endl;
+            for(int itms=0; itms < shifts; itms++){
                 auto last_itm = _data[items_count()-1];
-                for(int idx=items_count()-2; idx<=0 ; idx--){
+                for(int idx=items_count()-2; idx>=0 ; idx--){
+                   //std::cout << idx << " ";
                     _data[idx+1] = _data[idx];
                 }
+                 //std::cout  <<  std::endl;
                 _data[0] = last_itm;
             }
         }
@@ -577,7 +581,7 @@ private:
      * @return const uint32_t
      */
     virtual const uint32_t black_color() {
-        return ldata::color_black;
+         return ldata::color_black;
     }
 
     /**
@@ -592,11 +596,20 @@ private:
     bool _busy = false;
     bool _extend_data = false;
 
+   const int get_items_to_shift() {
+     _shift_counter = _shift_counter + get_shift_items();
+     if(_shift_counter >= items_count())
+       _shift_counter = 0;
+
+     return _shift_counter;
+   }
+
 protected:
     int _items_count;      //number of output items supported by this consumer
     OutData _data;
 
     int _loop_counter = -1;     //loop countr
+    int _shift_counter = 0;
 
     ConsumerSettings cs;
 
@@ -604,3 +617,4 @@ protected:
 
 }
 #endif
+ 
